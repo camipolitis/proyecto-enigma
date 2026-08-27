@@ -97,7 +97,13 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
+<<<<<<< Updated upstream
     - rid: 6573600195310780416
+=======
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 6573600158313349123
+>>>>>>> Stashed changes
       type: {class: RayTracingRenderPipelineResources, ns: UnityEngine.Rendering.UnifiedRayTracing, asm: Unity.UnifiedRayTracing.Runtime}
       data:
         m_Version: 1
