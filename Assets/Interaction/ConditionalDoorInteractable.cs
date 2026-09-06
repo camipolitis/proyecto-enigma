@@ -3,6 +3,7 @@ using UnityEngine;
 using static UnityEngine.Rendering.STP;
 
 namespace Enigma.Interaction
+{
     // Puerta condicionada por flag: al Success rota y dispara fin de nivel vía flag.
     public class ConditionalDoorInteractable : InteractableBase
     {
