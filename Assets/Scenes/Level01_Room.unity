@@ -1241,7 +1241,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 414da6f272afe454dbe8803615ed12e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Core.GameFlagSystem
-  initialFalseFlags: []
+  initialFalseFlags:
+  - note_read
+  - fuse_collected
+  - fuse_installed
+  - power_active
+  - door_unlocked
 --- !u!1 &1658194426
 GameObject:
   m_ObjectHideFlags: 0
