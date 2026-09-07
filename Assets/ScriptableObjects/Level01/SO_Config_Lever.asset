@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ade1778d40959794985bd91c9a920b98, type: 3}
+  m_Name: SO_Config_Lever
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.InteractableConfig
+  prompt: Accionar palanca
+  requiredFlagId: fuse_installed
+  successFlagId: power_active
+  requiredItem: {fileID: 0}
+  failDialogueId: lever_no_power
+  successDialogueId: 
+  requiresZoom: 0
+  allowsInventoryWhileZoom: 0
