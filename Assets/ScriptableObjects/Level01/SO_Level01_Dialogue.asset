@@ -19,6 +19,6 @@ MonoBehaviour:
   - id: missing_fuse
     text: Parece que falta un fusible...
     duration: 2.5
-  - id: level_no_power
+  - id: lever_no_power
     text: "No funcionar\xE1 sin el suministro de energ\xEDa necesario..."
     duration: 3

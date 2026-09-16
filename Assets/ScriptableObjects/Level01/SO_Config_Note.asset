@@ -18,5 +18,5 @@ MonoBehaviour:
   requiredItem: {fileID: 0}
   failDialogueId: 
   successDialogueId: 
-  requiresZoom: 1
+  requiresZoom: 0
   allowsInventoryWhileZoom: 0

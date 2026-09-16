@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.InteractableConfig
   prompt: "Abrir caj\xF3n"
   requiredFlagId: 
-  successFlagId: fuse_collected
+  successFlagId: 
   requiredItem: {fileID: 0}
   failDialogueId: 
   successDialogueId: 
