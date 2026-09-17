@@ -12,6 +12,9 @@ namespace Enigma.Interaction
         [SerializeField] private InventoryItem autoAddItem;
         [SerializeField] private Transform animatedPart;
         [SerializeField] private Vector3 openLocalEuler = new Vector3(25f, 0f, 0f);
+        [SerializeField] private Vector3 openLocalPosition;
+        // Desplazamiento local al abrir (ej. cajón en X).
+
         [SerializeField] private bool opened;
 
         protected override bool MeetsSuccessConditions(InteractContext context)
@@ -25,7 +28,10 @@ namespace Enigma.Interaction
             opened = true;
 
             if (animatedPart != null)
+            {
                 animatedPart.localRotation = Quaternion.Euler(openLocalEuler);
+                animatedPart.localPosition = openLocalPosition;
+            }
 
             if (contentObject != null)
                 contentObject.SetActive(true);
