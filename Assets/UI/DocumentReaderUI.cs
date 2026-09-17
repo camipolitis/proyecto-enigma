@@ -14,6 +14,7 @@ namespace Enigma.UI
         [SerializeField] private GameObject root;
         [SerializeField] private Text titleLabel;
         [SerializeField] private Text bodyLabel;
+        [SerializeField] private RawImage viewImage;
         [SerializeField] private PlayerInputHandler input;
         [SerializeField] private MemoryJournal journal;
         [SerializeField] private MemoryJournalUI journalUi;
@@ -33,7 +34,8 @@ namespace Enigma.UI
             if (!_open || input == null)
                 return;
 
-            if (input.BackPressedThisFrame)
+            if (input.BackPressedThisFrame &&
+                (ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.Document)))
                 Close();
         }
 
@@ -45,10 +47,26 @@ namespace Enigma.UI
 
             if (root != null)
                 root.SetActive(true);
+
+            bool hasImage = document != null && document.viewImage != null;
+            if (viewImage != null)
+            {
+                viewImage.gameObject.SetActive(hasImage);
+                if (hasImage)
+                    viewImage.texture = document.viewImage;
+            }
+
             if (titleLabel != null)
+            {
+                titleLabel.gameObject.SetActive(!hasImage);
                 titleLabel.text = document != null ? document.title : string.Empty;
+            }
+
             if (bodyLabel != null)
+            {
+                bodyLabel.gameObject.SetActive(!hasImage);
                 bodyLabel.text = document != null ? document.body : string.Empty;
+            }
 
             ModalStack.Instance?.Push(ModalKind.Document);
             Cursor.lockState = CursorLockMode.None;
@@ -75,19 +93,29 @@ namespace Enigma.UI
                     journalUi?.ShowToast(_current.memoryCollectedMessage);
                 }
 
-                string line = string.IsNullOrEmpty(_current.releaseSubtitle) ? "M..." : _current.releaseSubtitle;
-                _context?.Subtitles?.Show(line, 1.5f);
-                // Voz al soltar con Q.
+                PlayReleaseLine();
             }
 
             _current = null;
             _context = null;
+            ModalStack.Instance?.ApplyCursorForTop();
+        }
 
-            if (ModalStack.Instance == null || ModalStack.Instance.IsEmpty)
+        private void PlayReleaseLine()
+        {
+            if (_context?.Subtitles == null)
+                return;
+
+            var set = _context.Dialogue;
+            if (set != null && !string.IsNullOrEmpty(_current.releaseDialogueId) &&
+                set.TryGet(_current.releaseDialogueId, out var spoken))
             {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                _context.Subtitles.Show(spoken.text, spoken.duration, spoken.voice);
+                return;
             }
+
+            string line = string.IsNullOrEmpty(_current.releaseSubtitle) ? "M..." : _current.releaseSubtitle;
+            _context.Subtitles.Show(line, 1.5f);
         }
     }
 }

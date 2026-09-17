@@ -8,6 +8,8 @@ namespace Enigma.UI
         [SerializeField] private CanvasGroup canvasGroup;
         [SerializeField] private float fadeDuration = 1.2f;
 
+        public float FadeDuration => fadeDuration;
+
         private void Awake()
         {
             if (canvasGroup != null)
@@ -27,6 +29,11 @@ namespace Enigma.UI
         {
             StopAllCoroutines();
             StartCoroutine(FadeTo(0f));
+        }
+
+        public System.Collections.IEnumerator FadeOutRoutine()
+        {
+            yield return FadeTo(1f);
         }
 
         private System.Collections.IEnumerator FadeTo(float target)

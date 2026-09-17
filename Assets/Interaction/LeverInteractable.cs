@@ -7,8 +7,8 @@ namespace Enigma.Interaction
     public class LeverInteractable : InteractableBase
     {
         [SerializeField] private Transform leverPivot;
-        [SerializeField] private float failedAngle = -25f;
-        [SerializeField] private float successAngle = -45f;
+        [SerializeField] private float failedAngle = 25f;
+        [SerializeField] private float successAngle = 45f;
         [SerializeField] private float animDuration = 0.35f;
 
         private bool _activated;

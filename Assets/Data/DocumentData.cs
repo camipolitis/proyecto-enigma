@@ -17,7 +17,13 @@ namespace Enigma.Data
         public string releaseSubtitle = "M...";
         // Línea al soltar con Q (voz del PJ).
 
+        public string releaseDialogueId;
+        // Id en DialogueLineSet para el clip de esa línea.
+
         public string memoryCollectedMessage = "Memoria recolectada";
         // Toast la primera vez que se guarda en el journal.
+
+        public Texture2D viewImage;
+        // Si hay imagen, el lector la muestra en vez del body.
     }
 }

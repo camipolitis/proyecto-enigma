@@ -22,13 +22,13 @@ namespace Enigma.Player
         private InputAction _crouch;
         private InputAction _previous;
         private InputAction _next;
-        // Referencias cacheadas: más barato que buscar por string cada frame...
 
         public Vector2 MoveInput { get; private set; }
         public Vector2 LookInput { get; private set; }
         public bool SprintHeld { get; private set; }
         public bool JumpPressed { get; private set; }
         public bool CrouchPressedThisFrame { get; private set; }
+        public bool CrouchHeld { get; private set; }
         public bool InteractPressedThisFrame { get; private set; }
         public bool BackPressedThisFrame { get; private set; }
         public bool PausePressedThisFrame { get; private set; }
@@ -37,16 +37,16 @@ namespace Enigma.Player
         public bool NextPressedThisFrame { get; private set; }
 
         public bool GameplayInputEnabled { get; private set; } = true;
-        // Intro y modales apagan Move/Look/Jump.
 
         private void Awake()
         {
+            BindActions();
+        }
+
+        public void BindActions()
+        {
             if (inputActions == null)
-            {
-                Debug.LogError("Falta InputActionAsset");
-                enabled = false;
                 return;
-            }
 
             _playerMap = inputActions.FindActionMap("Player", true);
             _move = _playerMap.FindAction("Move", true);
@@ -60,6 +60,9 @@ namespace Enigma.Player
             _crouch = _playerMap.FindAction("Crouch", true);
             _previous = _playerMap.FindAction("Previous", true);
             _next = _playerMap.FindAction("Next", true);
+
+            if (isActiveAndEnabled)
+                _playerMap.Enable();
         }
 
         private void OnEnable()
@@ -76,30 +79,42 @@ namespace Enigma.Player
         {
             JumpPressed = false;
             CrouchPressedThisFrame = false;
+            CrouchHeld = false;
             InteractPressedThisFrame = false;
             BackPressedThisFrame = false;
             PausePressedThisFrame = false;
             InventoryPressedThisFrame = false;
             PreviousPressedThisFrame = false;
             NextPressedThisFrame = false;
-            // Los "pressed this frame" se consumen una vez por Update
+
+            if (_pause == null)
+                return;
 
             PausePressedThisFrame = _pause.WasPressedThisFrame();
             BackPressedThisFrame = _back.WasPressedThisFrame();
             InventoryPressedThisFrame = _inventory.WasPressedThisFrame();
             InteractPressedThisFrame = _interact.WasPressedThisFrame();
-            // Interact también fuera de gameplay: te levantás con la E
+
+            bool paused = PauseSystem.Instance != null && PauseSystem.Instance.IsPaused;
+            bool blockHotbar = paused ||
+                (ModalStack.Instance != null &&
+                 (ModalStack.Instance.Contains(ModalKind.Pause) ||
+                  ModalStack.Instance.Contains(ModalKind.Document) ||
+                  ModalStack.Instance.Contains(ModalKind.CodeEntry)));
+
+            if (GameplayInputEnabled && !blockHotbar)
+            {
+                PreviousPressedThisFrame = _previous.WasPressedThisFrame();
+                NextPressedThisFrame = _next.WasPressedThisFrame();
+            }
 
             bool blocked = ModalStack.Instance != null && ModalStack.Instance.BlocksGameplay();
-            bool paused = PauseSystem.Instance != null && PauseSystem.Instance.IsPaused;
-
             if (!GameplayInputEnabled || blocked || paused)
             {
                 MoveInput = Vector2.zero;
                 LookInput = Vector2.zero;
                 SprintHeld = false;
                 return;
-                // Congela movimiento mientras hay modal o intro
             }
 
             MoveInput = _move.ReadValue<Vector2>();
@@ -107,14 +122,12 @@ namespace Enigma.Player
             SprintHeld = _sprint.IsPressed();
             JumpPressed = _jump.WasPressedThisFrame();
             CrouchPressedThisFrame = _crouch.WasPressedThisFrame();
-            PreviousPressedThisFrame = _previous.WasPressedThisFrame();
-            NextPressedThisFrame = _next.WasPressedThisFrame();
+            CrouchHeld = _crouch.IsPressed();
         }
 
         public void SetGameplayInputEnabled(bool enabled)
         {
             GameplayInputEnabled = enabled;
-            // IntroSequence lo pone en false hasta levantarse.
         }
     }
 }

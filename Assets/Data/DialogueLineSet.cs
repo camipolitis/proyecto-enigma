@@ -10,7 +10,8 @@ namespace Enigma.Data
         public string id;
         [TextArea] public string text;
         public float duration = 2.5f;
-        // Duración del subtítulo.
+        public AudioClip voice;
+        // Clip opcional; si está vacío solo se ve el subtítulo.
     }
 
     [CreateAssetMenu(fileName = "SO_DialogueLineSet", menuName = "Enigma/Dialogue Line Set")]

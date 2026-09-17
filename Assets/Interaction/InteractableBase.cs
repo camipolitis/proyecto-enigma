@@ -12,6 +12,12 @@ namespace Enigma.Interaction
         [SerializeField] protected InteractableConfig config;
         [SerializeField] protected DialogueLineSet dialogue;
         [SerializeField] protected Transform zoomAnchor;
+        [SerializeField] private float interactRange;
+        // 0 = usa el range del detector.
+
+        private bool _localCompleted;
+
+        public float InteractRange => interactRange;
 
         public virtual bool RequiresZoom => config != null && config.requiresZoom;
         public virtual bool AllowsInventoryWhileZoom => config != null && config.allowsInventoryWhileZoom;
@@ -19,23 +25,33 @@ namespace Enigma.Interaction
 
         public virtual string GetPrompt(InteractContext context)
         {
+            if (IsCompleted())
+                return string.Empty;
+
             string prompt = config != null ? config.prompt : "Interactuar";
             return $"[E] {prompt}";
         }
 
         public virtual bool CanAttemptInteract(InteractContext context)
         {
-            return enabled && gameObject.activeInHierarchy;
-            // Siempre intentable si está activo: el Fail da el diálogo.
+            if (!enabled || !gameObject.activeInHierarchy)
+                return false;
+            if (IsCompleted())
+                return false;
+            return true;
         }
 
         public void Interact(InteractContext context)
         {
+            if (IsCompleted())
+                return;
+
             if (RequiresZoom && InteractionZoomController.Instance != null &&
                 !InteractionZoomController.Instance.IsZooming)
             {
-                InteractionZoomController.Instance.EnterZoom(ZoomAnchor, AllowsInventoryWhileZoom);
-                // Primer E acerca la cámara; el segundo resuelve.
+                InteractionZoomController.Instance.EnterZoom(ZoomAnchor, AllowsInventoryWhileZoom, this);
+                // Primer E solo acerca; el siguiente resuelve Success/Fail.
+                return;
             }
 
             if (MeetsSuccessConditions(context))
@@ -44,10 +60,29 @@ namespace Enigma.Interaction
                 OnFail(context);
         }
 
+        protected virtual bool IsCompleted()
+        {
+            if (_localCompleted)
+                return true;
+
+            if (config != null && !string.IsNullOrEmpty(config.successFlagId) &&
+                GameFlagSystem.Instance != null &&
+                GameFlagSystem.Instance.Get(config.successFlagId))
+                return true;
+
+            return false;
+        }
+
+        protected void MarkCompleted()
+        {
+            _localCompleted = true;
+        }
+
         protected virtual bool MeetsSuccessConditions(InteractContext context)
         {
             if (config == null)
-                return true;
+                return false;
+            // Sin config no hay Success: la puerta no se abre sola.
 
             if (!string.IsNullOrEmpty(config.requiredFlagId))
             {
@@ -72,6 +107,7 @@ namespace Enigma.Interaction
 
             PlayDialogue(context, config != null ? config.successDialogueId : null);
             HandleSuccessExtra(context);
+            MarkCompleted();
         }
 
         protected virtual void OnFail(InteractContext context)
@@ -87,7 +123,7 @@ namespace Enigma.Interaction
 
             DialogueLineSet set = dialogue != null ? dialogue : context.Dialogue;
             if (set != null && set.TryGet(dialogueId, out var line))
-                context.Subtitles.Show(line.text, line.duration);
+                context.Subtitles.Show(line.text, line.duration, line.voice);
             else
                 context.Subtitles.Show(dialogueId, 2.5f);
         }

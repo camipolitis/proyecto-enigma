@@ -4,9 +4,7 @@ using UnityEngine;
 
 namespace Enigma.Core
 {
-    
-    /// Guarda flags de progreso del nivel por id string.
-    
+    // Guarda flags de progreso del nivel por id string.
     public class GameFlagSystem : MonoBehaviour
     {
         public static GameFlagSystem Instance { get; private set; }

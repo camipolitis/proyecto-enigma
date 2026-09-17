@@ -3,7 +3,7 @@ using Enigma.Player;
 
 namespace Enigma.CameraSystem
 {
-    /// Cámara tercera persona independiente (no hija del Player).
+    // Cámara tercera persona independiente (no hija del Player).
     public class ThirdPersonCamera : MonoBehaviour
     {
         [SerializeField] private Transform followTarget;
@@ -19,7 +19,7 @@ namespace Enigma.CameraSystem
         [SerializeField] private float maxPitch = 60f;
         [SerializeField] private float collisionRadius = 0.2f;
         [SerializeField] private LayerMask collisionMask = ~0;
-        // Colisión contra paredes para no atravesar geometry
+        // Colisión contra paredes para no atravesar geometría
 
         private float _yaw;
         private float _pitch = 15f;

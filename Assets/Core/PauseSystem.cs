@@ -2,14 +2,12 @@ using UnityEngine;
 
 namespace Enigma.Core
 {
-    /// Pause con Escape / Start. No cierra zoom ni documentos (eso es Q).
-   
+    // Pause con Escape / Start. No cierra zoom ni documentos (eso es Q).
     public class PauseSystem : MonoBehaviour
     {
         public static PauseSystem Instance { get; private set; }
 
         [SerializeField] private GameObject pausePanel;
-        // Panel UI opcional; puede quedar vacío hasta que armemos el prefab.
 
         public bool IsPaused { get; private set; }
 
@@ -47,8 +45,6 @@ namespace Enigma.Core
 
             IsPaused = true;
             Time.timeScale = 0f;
-            // Congela animaciones y física del nivel.
-
             ModalStack.Instance?.Push(ModalKind.Pause);
 
             if (pausePanel != null)
@@ -65,15 +61,12 @@ namespace Enigma.Core
 
             IsPaused = false;
             Time.timeScale = 1f;
-
             ModalStack.Instance?.TryPopSpecific(ModalKind.Pause);
 
             if (pausePanel != null)
                 pausePanel.SetActive(false);
 
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            // Vuelve al control de cámara en tercera persona
+            ModalStack.Instance?.ApplyCursorForTop();
         }
     }
 }

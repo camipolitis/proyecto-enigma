@@ -19,4 +19,5 @@ MonoBehaviour:
     pendiente de aprobaci\xF3n...\n\nEl laboratorio permanecer\xE1 cerrado hasta
     nuevo aviso.\n- M.\n "
   releaseSubtitle: M...
+  releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada

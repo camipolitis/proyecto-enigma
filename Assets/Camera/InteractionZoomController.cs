@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using Enigma.Core;
+using Enigma.Interaction;
 using Enigma.Player;
 
 namespace Enigma.CameraSystem
@@ -19,9 +20,11 @@ namespace Enigma.CameraSystem
         private Coroutine _blendRoutine;
         private Vector3 _savedPos;
         private Quaternion _savedRot;
+        private LowPolyPlayerVisual _playerVisual;
 
         public bool IsZooming => _activeAnchor != null;
         public bool AllowsInventoryWhileZoom => _allowsInventory;
+        public IInteractable ZoomTarget { get; private set; }
 
         private void Awake()
         {
@@ -39,13 +42,14 @@ namespace Enigma.CameraSystem
                 Instance = null;
         }
 
-        public void EnterZoom(Transform anchor, bool allowsInventory)
+        public void EnterZoom(Transform anchor, bool allowsInventory, IInteractable target = null)
         {
             if (anchor == null)
                 return;
 
             _activeAnchor = anchor;
             _allowsInventory = allowsInventory;
+            ZoomTarget = target;
 
             _savedPos = transform.position;
             _savedRot = transform.rotation;
@@ -53,6 +57,7 @@ namespace Enigma.CameraSystem
             thirdPersonCamera?.SetOrbitEnabled(false);
             playerState?.SetState(PlayerGameplayState.Locked);
             ModalStack.Instance?.Push(ModalKind.Zoom);
+            SetPlayerVisible(false);
 
             if (_blendRoutine != null)
                 StopCoroutine(_blendRoutine);
@@ -66,12 +71,20 @@ namespace Enigma.CameraSystem
 
             _activeAnchor = null;
             _allowsInventory = false;
+            ZoomTarget = null;
 
             ModalStack.Instance?.TryPopSpecific(ModalKind.Zoom);
 
             if (_blendRoutine != null)
                 StopCoroutine(_blendRoutine);
             _blendRoutine = StartCoroutine(BlendBackAndRestore());
+        }
+
+        private void SetPlayerVisible(bool visible)
+        {
+            if (_playerVisual == null)
+                _playerVisual = FindFirstObjectByType<LowPolyPlayerVisual>();
+            _playerVisual?.SetVisible(visible);
         }
 
         private IEnumerator BlendTo(Vector3 pos, Quaternion rot)
@@ -93,6 +106,7 @@ namespace Enigma.CameraSystem
         {
             yield return BlendTo(_savedPos, _savedRot);
 
+            SetPlayerVisible(true);
             thirdPersonCamera?.CaptureCurrentAngles();
             thirdPersonCamera?.SetOrbitEnabled(true);
             playerState?.SetState(PlayerGameplayState.Exploring);

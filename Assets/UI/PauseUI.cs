@@ -12,8 +12,13 @@ namespace Enigma.UI
 
         private void Update()
         {
-            if (input != null && input.PausePressedThisFrame)
-                pauseSystem?.Toggle();
+            if (input == null || pauseSystem == null)
+                return;
+
+            if (input.PausePressedThisFrame)
+                pauseSystem.Toggle();
+            else if (pauseSystem.IsPaused && input.BackPressedThisFrame)
+                pauseSystem.Resume();
         }
     }
 }

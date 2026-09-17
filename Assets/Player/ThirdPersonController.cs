@@ -45,7 +45,7 @@ namespace Enigma.Player
             if (input == null || state == null)
                 return;
 
-            HandleCrouchToggle();
+            HandleCrouch();
             ApplyHeightSmooth();
 
             if (!state.CanMove)
@@ -101,12 +101,12 @@ namespace Enigma.Player
             // Movimiento relativo a la cámara, no al mundo.
         }
 
-        private void HandleCrouchToggle()
+        private void HandleCrouch()
         {
-            if (!input.CrouchPressedThisFrame || !state.CanMove)
+            if (!state.CanMove)
                 return;
 
-            _isCrouching = !_isCrouching;
+            _isCrouching = input.CrouchHeld;
             _targetHeight = _isCrouching ? crouchHeight : standHeight;
         }
 

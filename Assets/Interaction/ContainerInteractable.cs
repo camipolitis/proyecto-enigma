@@ -16,6 +16,7 @@ namespace Enigma.Interaction
         // Desplazamiento local al abrir (ej. cajón en X).
 
         [SerializeField] private bool opened;
+        [SerializeField] private GameObject[] revealOnOpen;
 
         protected override bool MeetsSuccessConditions(InteractContext context)
         {
@@ -36,12 +37,25 @@ namespace Enigma.Interaction
             if (contentObject != null)
                 contentObject.SetActive(true);
 
+            if (revealOnOpen != null)
+            {
+                foreach (var go in revealOnOpen)
+                {
+                    if (go != null)
+                        go.SetActive(true);
+                }
+            }
+
+            var box = GetComponent<Collider>();
+            if (box != null)
+                box.enabled = false;
+
             if (autoAddItem != null && context.Inventory != null && context.Inventory.CanAdd(autoAddItem))
             {
                 context.Inventory.Add(autoAddItem);
                 if (contentObject != null)
                     contentObject.SetActive(false);
-                // Acá este AutoAddItem lo dejamos vacío (Inspector), pregunten.
+                // El fusible del cajón se recoge aparte.
             }
         }
 

@@ -1,20 +1,22 @@
+using System.Collections;
+using Enigma.UI;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace Enigma.Core
 {
-    
-    /// Punto de anclaje del nivel: referencias y evento de fin de nivel.
-    
+    // Ancla del nivel: fin de nivel, fade y carga de la siguiente escena.
     public class GameManager : MonoBehaviour
     {
         public static GameManager Instance { get; private set; }
 
         [SerializeField] private string levelCompleteFlag = "door_unlocked";
-        // Flag configurable: cuando se pone true, dispara el fin de nivel.
-
         [SerializeField] private UnityEvent onLevelComplete;
-        
+        [SerializeField] private ScreenFade screenFade;
+        [SerializeField] private SceneLoader sceneLoader;
+        [SerializeField] private string nextSceneName = "Level02_Lab";
+        [SerializeField] private GameObject endPanel;
+        // Si nextSceneName está vacío, muestra endPanel (Continuará).
 
         private bool _levelCompleted;
 
@@ -36,15 +38,21 @@ namespace Enigma.Core
 
         private void Start()
         {
-            // Por si GameFlagSystem despierta después en el mismo frame.
             if (GameFlagSystem.Instance != null)
             {
                 GameFlagSystem.Instance.OnFlagChanged -= HandleFlagChanged;
                 GameFlagSystem.Instance.OnFlagChanged += HandleFlagChanged;
             }
 
+            Time.timeScale = 1f;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+
+            if (endPanel != null)
+                endPanel.SetActive(false);
+
+            if (screenFade != null)
+                screenFade.FadeIn();
         }
 
         private void OnDisable()
@@ -74,9 +82,37 @@ namespace Enigma.Core
                 return;
 
             _levelCompleted = true;
-            
-
             onLevelComplete?.Invoke();
+            StartCoroutine(CompleteRoutine());
+        }
+
+        private IEnumerator CompleteRoutine()
+        {
+            Time.timeScale = 1f;
+
+            if (screenFade != null)
+                yield return screenFade.FadeOutRoutine();
+            else
+                yield return null;
+
+            if (sceneLoader != null && !string.IsNullOrEmpty(nextSceneName))
+            {
+                sceneLoader.LoadSceneByName(nextSceneName);
+                yield break;
+            }
+
+            if (endPanel != null)
+                endPanel.SetActive(true);
+
+            if (screenFade != null)
+            {
+                var fadeGroup = screenFade.GetComponent<CanvasGroup>();
+                if (fadeGroup != null)
+                    fadeGroup.blocksRaycasts = false;
+            }
+
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
     }
 }

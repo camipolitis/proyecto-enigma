@@ -3,14 +3,14 @@ using UnityEngine.SceneManagement;
 
 namespace Enigma.Core
 {
-    /// Modelo reutilizable para cargar escenas. N1 solo usa fade + log.
+    // Carga de escenas por nombre (Build Settings).
     public class SceneLoader : MonoBehaviour
     {
         public void LoadSceneByName(string sceneName)
         {
             if (string.IsNullOrEmpty(sceneName))
             {
-                Debug.LogWarning("Aún no hay escenas! jeje");
+                Debug.LogWarning("SceneLoader: nombre de escena vacío.");
                 return;
             }
 

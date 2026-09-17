@@ -51,7 +51,8 @@ namespace Enigma.Inventory
             if (input.InventoryPressedThisFrame)
                 TogglePanel();
 
-            if (input.BackPressedThisFrame && _panelOpen)
+            if (input.BackPressedThisFrame && _panelOpen &&
+                (ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.Inventory)))
                 ClosePanel();
         }
 
@@ -95,12 +96,7 @@ namespace Enigma.Inventory
             if (panelRoot != null && !hotbarAlwaysVisible)
                 panelRoot.SetActive(false);
             ModalStack.Instance?.TryPopSpecific(ModalKind.Inventory);
-
-            if (ModalStack.Instance == null || ModalStack.Instance.IsEmpty)
-            {
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
+            ModalStack.Instance?.ApplyCursorForTop();
         }
 
         private void Refresh()

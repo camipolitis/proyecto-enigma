@@ -11,6 +11,8 @@ namespace Enigma.Sequences
     public class IntroSequence : MonoBehaviour
     {
         [SerializeField] private IntroSequenceConfig config;
+        [SerializeField] private DialogueLineSet dialogue;
+        [SerializeField] private string openingDialogueId = "intro_wake";
         [SerializeField] private PlayerInputHandler input;
         [SerializeField] private PlayerStateController state;
         [SerializeField] private ThirdPersonController controller;
@@ -34,7 +36,16 @@ namespace Enigma.Sequences
 
             string opening = config != null ? config.openingSubtitle : "¿Dónde estoy? ...¿Qué pasó?";
             float duration = config != null ? config.openingSubtitleDuration : 3f;
-            subtitles?.Show(opening, duration);
+            if (dialogue != null && dialogue.TryGet(openingDialogueId, out var line))
+            {
+                opening = line.text;
+                duration = line.duration;
+                if (line.voice != null && line.voice.length > duration)
+                    duration = line.voice.length;
+                subtitles?.Show(line.text, line.duration, line.voice);
+            }
+            else
+                subtitles?.Show(opening, duration);
 
             yield return new WaitForSecondsRealtime(duration);
 

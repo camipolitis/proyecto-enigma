@@ -13,12 +13,23 @@ MonoBehaviour:
   m_Name: SO_Level01_Dialogue
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DialogueLineSet
   lines:
+  - id: intro_wake
+    text: "\xBFD\xF3nde estoy? ...\xBFQu\xE9 pas\xF3?"
+    duration: 3
+    voice: {fileID: 8300000, guid: 7bcdfdeb6b2b3ee47ac6d784da20eea2, type: 3}
   - id: door_locked
     text: "Est\xE1 bloqueada..."
     duration: 2.5
+    voice: {fileID: 8300000, guid: 24e942fabb67fa24393ee225956068cc, type: 3}
   - id: missing_fuse
     text: Parece que falta un fusible...
     duration: 2.5
+    voice: {fileID: 8300000, guid: bc708863f66ef1c409d2dcd804efae34, type: 3}
   - id: lever_no_power
     text: "No funcionar\xE1 sin el suministro de energ\xEDa necesario..."
     duration: 3
+    voice: {fileID: 8300000, guid: 71d36289711c4d2488da75be257fa562, type: 3}
+  - id: note_release
+    text: M...
+    duration: 1.5
+    voice: {fileID: 8300000, guid: 2cf75e87f58db494d9f9756a6d3910a9, type: 3}

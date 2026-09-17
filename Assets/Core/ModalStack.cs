@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Enigma.Core
 {
-        /// Pila LIFO de modales (ventanas emergentes) (zoom, inventario, documento, pause)
-        public class ModalStack : MonoBehaviour
+    // Pila LIFO de modales (zoom, inventario, documento, pause, código)
+    public class ModalStack : MonoBehaviour
     {
         public static ModalStack Instance { get; private set; }
 
@@ -16,6 +16,8 @@ namespace Enigma.Core
 
         public bool IsEmpty => _stack.Count == 0;
         public ModalKind? Top => _stack.Count > 0 ? _stack[_stack.Count - 1] : null;
+
+        public bool IsTop(ModalKind kind) => Top == kind;
 
         private void Awake()
         {
@@ -85,12 +87,23 @@ namespace Enigma.Core
 
         public bool AllowsInventoryOpen()
         {
-            if (Contains(ModalKind.Pause) || Contains(ModalKind.Document))
+            if (Contains(ModalKind.Pause) || Contains(ModalKind.Document) || Contains(ModalKind.CodeEntry))
                 return false;
-            // Pause y lectura de nota bloquean el inventario
+            // Pause, lectura y código bloquean el inventario
 
             return true;
             // Zoom se valida aparte con allowsInventoryWhileZoom
+        }
+
+        public void ApplyCursorForTop()
+        {
+            var top = Top;
+            bool uiOpen = top == ModalKind.Pause ||
+                          top == ModalKind.Document ||
+                          top == ModalKind.CodeEntry ||
+                          top == ModalKind.Inventory;
+            Cursor.lockState = uiOpen ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = uiOpen;
         }
     }
 }

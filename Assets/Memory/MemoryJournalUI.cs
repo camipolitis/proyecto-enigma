@@ -22,16 +22,22 @@ namespace Enigma.Memory
                 journal.OnMemoryAdded += HandleAdded;
         }
 
+        private void Start()
+        {
+            if (journal != null)
+            {
+                journal.OnMemoryAdded -= HandleAdded;
+                journal.OnMemoryAdded += HandleAdded;
+            }
+
+            if (toastRoot != null)
+                toastRoot.SetActive(false);
+        }
+
         private void OnDisable()
         {
             if (journal != null)
                 journal.OnMemoryAdded -= HandleAdded;
-        }
-
-        private void Start()
-        {
-            if (toastRoot != null)
-                toastRoot.SetActive(false);
         }
 
         private void Update()

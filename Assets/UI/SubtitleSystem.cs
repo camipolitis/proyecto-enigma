@@ -12,11 +12,11 @@ namespace Enigma.UI
 
         [SerializeField] private GameObject root;
         [SerializeField] private Text label;
+        [SerializeField] private AudioSource voiceSource;
 
         public event Action<string> OnLinePlayed;
-        // Hook futuro para audio de voz.
 
-        private readonly Queue<(string text, float duration)> _queue = new Queue<(string, float)>();
+        private readonly Queue<(string text, float duration, AudioClip voice)> _queue = new Queue<(string, float, AudioClip)>();
         private float _timer;
         private bool _showing;
 
@@ -31,6 +31,8 @@ namespace Enigma.UI
 
             if (root != null)
                 root.SetActive(false);
+            if (voiceSource == null)
+                voiceSource = GetComponent<AudioSource>();
         }
 
         private void OnDestroy()
@@ -60,23 +62,32 @@ namespace Enigma.UI
             }
         }
 
-        public void Show(string text, float duration = 2.5f)
+        public void Show(string text, float duration = 2.5f, AudioClip voice = null)
         {
             if (string.IsNullOrEmpty(text))
                 return;
-            _queue.Enqueue((text, duration));
+            _queue.Enqueue((text, duration, voice));
         }
 
         private void ShowNext()
         {
-            var (text, duration) = _queue.Dequeue();
+            var (text, duration, voice) = _queue.Dequeue();
             _showing = true;
             _timer = duration;
+            if (voice != null && voice.length > _timer)
+                _timer = voice.length;
 
             if (root != null)
                 root.SetActive(true);
             if (label != null)
                 label.text = text;
+
+            if (voiceSource != null)
+            {
+                voiceSource.Stop();
+                if (voice != null)
+                    voiceSource.PlayOneShot(voice);
+            }
 
             OnLinePlayed?.Invoke(text);
         }

@@ -9,12 +9,14 @@ using UnityEngine;
 
 namespace Enigma.Interaction
 {
-    // Raycast desde la cámara hacia layer Interactable.
+    // SphereCast desde la cámara hacia layer Interactable.
     public class InteractionDetector : MonoBehaviour
     {
         [SerializeField] private PlayerInputHandler input;
         [SerializeField] private Camera rayCamera;
-        [SerializeField] private float range = 3f;
+        [SerializeField] private float range = 8f;
+        [SerializeField] private float aimRadius = 0.35f;
+        // Grosor del apuntado: un rayo fino no pega notebooks ni candados chicos.
         [SerializeField] private InventorySystem inventory;
         [SerializeField] private MemoryJournal memory;
         [SerializeField] private SubtitleSystem subtitles;
@@ -24,6 +26,7 @@ namespace Enigma.Interaction
 
         private IInteractable _current;
         private int _layerMask;
+        private readonly RaycastHit[] _hits = new RaycastHit[16];
 
         private void Awake()
         {
@@ -41,7 +44,8 @@ namespace Enigma.Interaction
 
             if (ModalStack.Instance != null &&
                 (ModalStack.Instance.Contains(ModalKind.Document) ||
-                 ModalStack.Instance.Contains(ModalKind.Pause)))
+                 ModalStack.Instance.Contains(ModalKind.Pause) ||
+                 ModalStack.Instance.Contains(ModalKind.CodeEntry)))
             {
                 ClearPrompt();
                 HandleBackOnly();
@@ -62,11 +66,35 @@ namespace Enigma.Interaction
                 return;
             }
 
-            Ray ray = new Ray(rayCamera.transform.position, rayCamera.transform.forward);
-            if (Physics.Raycast(ray, out RaycastHit hit, range, _layerMask, QueryTriggerInteraction.Collide))
+            var zoom = InteractionZoomController.Instance;
+            if (zoom != null && zoom.IsZooming && zoom.ZoomTarget != null)
             {
-                // QueryTriggerInteraction.Collide: los triggers sí reciben el ray.
-                _current = hit.collider.GetComponentInParent<IInteractable>();
+                if (zoom.ZoomTarget.CanAttemptInteract(BuildContext()))
+                    _current = zoom.ZoomTarget;
+            }
+            else
+            {
+                Ray ray = new Ray(rayCamera.transform.position, rayCamera.transform.forward);
+                int count = Physics.SphereCastNonAlloc(ray, aimRadius, _hits, range, _layerMask, QueryTriggerInteraction.Collide);
+                if (count > 1)
+                    System.Array.Sort(_hits, 0, count, HitDistanceComparer.Instance);
+
+                for (int i = 0; i < count; i++)
+                {
+                    var interactable = _hits[i].collider.GetComponentInParent<IInteractable>();
+                    if (interactable == null || !interactable.CanAttemptInteract(BuildContext()))
+                        continue;
+
+                    float allowed = range;
+                    if (interactable is InteractableBase body && body.InteractRange > 0.01f)
+                        allowed = body.InteractRange;
+
+                    if (_hits[i].distance <= allowed)
+                    {
+                        _current = interactable;
+                        break;
+                    }
+                }
             }
 
             if (_current != null && _current.CanAttemptInteract(BuildContext()))
@@ -119,6 +147,16 @@ namespace Enigma.Interaction
         private void ClearPrompt()
         {
             promptUi?.Hide();
+        }
+
+        private sealed class HitDistanceComparer : System.Collections.Generic.IComparer<RaycastHit>
+        {
+            public static readonly HitDistanceComparer Instance = new HitDistanceComparer();
+
+            public int Compare(RaycastHit a, RaycastHit b)
+            {
+                return a.distance.CompareTo(b.distance);
+            }
         }
     }
 }

@@ -2,7 +2,6 @@ using Enigma.CameraSystem;
 using Enigma.Data;
 using Enigma.UI;
 using UnityEngine;
-using static UnityEngine.Rendering.STP;
 
 namespace Enigma.Interaction
 {
@@ -33,7 +32,7 @@ namespace Enigma.Interaction
             if (RequiresZoom && InteractionZoomController.Instance != null &&
                 !InteractionZoomController.Instance.IsZooming)
             {
-                InteractionZoomController.Instance.EnterZoom(ZoomAnchor, false);
+                InteractionZoomController.Instance.EnterZoom(ZoomAnchor, false, this);
             }
 
             readerUi.Open(document, context);
