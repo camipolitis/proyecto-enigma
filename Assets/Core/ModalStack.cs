@@ -1,0 +1,121 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Enigma.Core
+{
+    // Pila LIFO de modales (zoom, inventario, documento, pause, código)
+    public class ModalStack : MonoBehaviour
+    {
+        public static ModalStack Instance { get; private set; }
+
+        private readonly List<ModalKind> _stack = new List<ModalKind>();
+        
+        public event Action OnStackChanged;
+        // UI e input se suscriben para saber si el jugador puede moverse.
+
+        public bool IsEmpty => _stack.Count == 0;
+        public ModalKind? Top => _stack.Count > 0 ? _stack[_stack.Count - 1] : null;
+
+        public bool IsTop(ModalKind kind) => Top == kind;
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this &&
+                Instance.gameObject.scene == gameObject.scene)
+            {
+                Destroy(this);
+                return;
+            }
+
+            Instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this)
+                Instance = null;
+        }
+
+        public bool Contains(ModalKind kind) => _stack.Contains(kind);
+
+        public void Push(ModalKind kind)
+        {
+            if (_stack.Contains(kind))
+                return;
+            // Evita duplicar la misma ventana (ej: abrir inventario dos veces)
+
+            _stack.Add(kind);
+            OnStackChanged?.Invoke();
+        }
+
+        public bool TryPop(out ModalKind kind)
+        {
+            if (_stack.Count == 0)
+            {
+                kind = default;
+                return false;
+            }
+
+            kind = _stack[_stack.Count - 1];
+            _stack.RemoveAt(_stack.Count - 1);
+            OnStackChanged?.Invoke();
+            return true;
+            // Q / Back siempre cierra el modal de arriba
+        }
+
+        public bool TryPopSpecific(ModalKind kind)
+        {
+            if (_stack.Count == 0 || _stack[_stack.Count - 1] != kind)
+                return false;
+
+            _stack.RemoveAt(_stack.Count - 1);
+            OnStackChanged?.Invoke();
+            return true;
+        }
+
+        public bool TryRemove(ModalKind kind)
+        {
+            int index = _stack.LastIndexOf(kind);
+            if (index < 0)
+                return false;
+
+            _stack.RemoveAt(index);
+            OnStackChanged?.Invoke();
+            return true;
+        }
+
+        public void ClearAll()
+        {
+            _stack.Clear();
+            OnStackChanged?.Invoke();
+        }
+
+        public bool BlocksGameplay()
+        {
+            return _stack.Count > 0;
+            // Cualquier ventana bloquea Move/Look según PlayerInputHandler.
+        }
+
+        public bool AllowsInventoryOpen()
+        {
+            if (Contains(ModalKind.Pause) || Contains(ModalKind.Document) || Contains(ModalKind.CodeEntry))
+                return false;
+            // Pause, lectura y código bloquean el inventario
+
+            return true;
+            // Zoom se valida aparte con allowsInventoryWhileZoom
+        }
+
+        public void ApplyCursorForTop()
+        {
+            var top = Top;
+            bool uiOpen = top == ModalKind.Pause ||
+                          top == ModalKind.Document ||
+                          top == ModalKind.CodeEntry ||
+                          top == ModalKind.Inventory;
+            Cursor.lockState = uiOpen ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = uiOpen;
+        }
+    }
+}

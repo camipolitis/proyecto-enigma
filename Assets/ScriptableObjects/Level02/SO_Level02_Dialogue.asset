@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32c5ac0755d45e04aa04f68666b12acb, type: 3}
+  m_Name: SO_Level02_Dialogue
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DialogueLineSet
+  lines:
+  - id: door_locked
+    text: "Est\xE1 bloqueada..."
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 24e942fabb67fa24393ee225956068cc, type: 3}
+  - id: missing_battery
+    text: "Hace falta una bater\xEDa..."
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 04b93ccb26c98614a8cbde89127a391c, type: 3}
+  - id: battery_pickup
+    text: Esto puede servir...
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 0573b79e8d9e8334ea6a545e980b5bf2, type: 3}
+  - id: notebook_boot
+    text: "A\xFAn conserva algo de bater\xEDa..."
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 3897df87a34da194fb9487f333896372, type: 3}
+  - id: calendar_hint
+    text: Trece de diciembre del 78...
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 1ae3ac3af19887d4aaf624837f95d86c, type: 3}
+  - id: lock_fail
+    text: "Cu\xE1l ser\xE1 el c\xF3digo?..."
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 48971e6658eeaa540a650259dc02f9bf, type: 3}
+  - id: lock_ok
+    text: Bien...
+    duration: 2
+    voice: {fileID: 8300000, guid: ce49c5950a81ed54ab0de70cc6f71a35, type: 3}
+  - id: generator_on
+    text: "Funcion\xF3..."
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 1c1592a32e9c27440aee3ad3ff84f19b, type: 3}
+  - id: rope_no_battery
+    text: "Hace falta una bater\xEDa..."
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 04b93ccb26c98614a8cbde89127a391c, type: 3}
+  - id: code_wrong
+    text: "C\xF3digo incorrecto..."
+    duration: 2.5
+    voice: {fileID: 8300000, guid: ad773166c4ead3c498aa0d397eb39fbc, type: 3}
+  - id: folder_corrupt
+    text: parece que no puedo acceder...
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 40606dc9590c3ef4da225b4b7e4113fc, type: 3}
+  - id: battery_placed
+    text: Encaja...
+    duration: 2
+    voice: {fileID: 8300000, guid: cc76121e04fdf10409095e84fa9660d8, type: 3}
+  - id: folder_sign
+    text: 'firma: M...'
+    duration: 2
+    voice: {fileID: 8300000, guid: e229c07d635ad894fa0ab9c709f1d3b4, type: 3}
