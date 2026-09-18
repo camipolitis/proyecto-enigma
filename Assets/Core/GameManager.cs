@@ -1,4 +1,5 @@
 using System.Collections;
+using Enigma.CameraSystem;
 using Enigma.UI;
 using UnityEngine;
 using UnityEngine.Events;
@@ -20,13 +21,17 @@ namespace Enigma.Core
 
         private bool _levelCompleted;
 
+        public bool IsLevelCompleted => _levelCompleted;
+
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (Instance != null && Instance != this &&
+                Instance.gameObject.scene == gameObject.scene)
             {
-                Destroy(gameObject);
+                Destroy(this);
                 return;
             }
+
             Instance = this;
         }
 
@@ -82,6 +87,14 @@ namespace Enigma.Core
                 return;
 
             _levelCompleted = true;
+
+            if (PauseSystem.Instance != null && PauseSystem.Instance.IsPaused)
+                PauseSystem.Instance.Resume();
+
+            InteractionZoomController.Instance?.ExitZoom();
+            ModalStack.Instance?.ClearAll();
+            Time.timeScale = 1f;
+
             onLevelComplete?.Invoke();
             StartCoroutine(CompleteRoutine());
         }

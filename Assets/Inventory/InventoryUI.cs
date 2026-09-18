@@ -51,8 +51,9 @@ namespace Enigma.Inventory
             if (input.InventoryPressedThisFrame)
                 TogglePanel();
 
-            if (input.BackPressedThisFrame && _panelOpen &&
-                (ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.Inventory)))
+            if (_panelOpen &&
+                (ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.Inventory)) &&
+                input.TryConsumeBack())
                 ClosePanel();
         }
 

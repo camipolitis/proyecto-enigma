@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace Enigma.UI
 {
     // Panel numérico: teclado + pad en pantalla.
-    public class CodeEntryUI : MonoBehaviour
+    public class CodeEntryUI : ModalUIBase
     {
         [SerializeField] private GameObject root;
         [SerializeField] private Text titleLabel;
@@ -24,8 +24,13 @@ namespace Enigma.UI
         [SerializeField] private string failDialogueId;
 
         private string _buffer = string.Empty;
-        private bool _open;
         private Action _onSuccess;
+
+        protected override ModalKind Kind => ModalKind.CodeEntry;
+        protected override GameObject ModalRoot => root;
+        protected override PlayerInputHandler Input => input;
+
+        private bool IsTop => ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.CodeEntry);
 
         private void Start()
         {
@@ -35,15 +40,14 @@ namespace Enigma.UI
 
         private void Update()
         {
-            if (!_open)
+            if (!IsOpen)
                 return;
 
-            if (input != null && input.BackPressedThisFrame &&
-                (ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.CodeEntry)))
-            {
-                Close(false);
+            if (TryCloseWithBack())
                 return;
-            }
+
+            if (!IsTop)
+                return;
 
             ReadDigits();
         }
@@ -62,14 +66,8 @@ namespace Enigma.UI
         public void Open()
         {
             _buffer = string.Empty;
-            _open = true;
             RefreshDisplay();
-            if (root != null)
-                root.SetActive(true);
-
-            ModalStack.Instance?.Push(ModalKind.CodeEntry);
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            OpenModal();
 
             var firstKey = root != null ? root.GetComponentInChildren<CodePadKey>(true) : null;
             if (firstKey != null && EventSystem.current != null)
@@ -78,30 +76,24 @@ namespace Enigma.UI
 
         public void Close(bool success)
         {
-            if (!_open)
+            if (!IsOpen)
                 return;
 
-            _open = false;
-            if (root != null)
-                root.SetActive(false);
-
-            ModalStack.Instance?.TryPopSpecific(ModalKind.CodeEntry);
-            ModalStack.Instance?.ApplyCursorForTop();
-
+            base.Close();
             if (success)
                 _onSuccess?.Invoke();
         }
 
         public void PressDigit(int digit)
         {
-            if (!_open)
+            if (!IsOpen || !IsTop)
                 return;
             AppendDigit((char)('0' + Mathf.Clamp(digit, 0, 9)));
         }
 
         public void PressBackspace()
         {
-            if (!_open || _buffer.Length == 0)
+            if (!IsOpen || !IsTop || _buffer.Length == 0)
                 return;
             _buffer = _buffer.Substring(0, _buffer.Length - 1);
             RefreshDisplay();
@@ -109,7 +101,7 @@ namespace Enigma.UI
 
         public void PressSubmit()
         {
-            if (!_open)
+            if (!IsOpen || !IsTop)
                 return;
             Submit();
         }

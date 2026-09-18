@@ -42,14 +42,16 @@ namespace Enigma.UI
             if (!_open || input == null)
                 return;
 
-            if (input.BackPressedThisFrame &&
-                (ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.Document)))
-            {
-                if (_showingNote)
-                    ShowFolders();
-                else
-                    Close();
-            }
+            if (ModalStack.Instance != null && !ModalStack.Instance.IsTop(ModalKind.Document))
+                return;
+
+            if (!input.TryConsumeBack())
+                return;
+
+            if (_showingNote)
+                ShowFolders();
+            else
+                Close();
         }
 
         public void Open()

@@ -119,25 +119,30 @@ namespace Enigma.Interaction
 
         private void HandleBackOnly()
         {
-            if (input == null || !input.BackPressedThisFrame)
+            if (input == null)
                 return;
 
             if (ModalStack.Instance == null || ModalStack.Instance.IsEmpty)
                 return;
 
-            var top = ModalStack.Instance.Top;
-            if (top == ModalKind.Zoom)
-                InteractionZoomController.Instance?.ExitZoom();
+            if (ModalStack.Instance.Top != ModalKind.Zoom)
+                return;
             // Document/Inventory se cierran en sus propios scripts al escuchar Back.
+
+            if (!input.TryConsumeBack())
+                return;
+
+            InteractionZoomController.Instance?.ExitZoom();
         }
 
         private InteractContext BuildContext()
         {
+            var liveMemory = MemoryJournal.Instance != null ? MemoryJournal.Instance : memory;
             return new InteractContext
             {
                 Actor = gameObject,
                 Inventory = inventory,
-                Memory = memory,
+                Memory = liveMemory,
                 Subtitles = subtitles,
                 Dialogue = defaultDialogue,
                 SelectedItem = inventory != null ? inventory.SelectedItem : null

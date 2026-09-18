@@ -21,12 +21,12 @@ namespace Enigma.Core
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (Instance != null && Instance != this &&
+                Instance.gameObject.scene == gameObject.scene)
             {
-                Destroy(gameObject);
+                Destroy(this);
                 return;
             }
-            // Un solo GameFlagSystem por escena.
 
             Instance = this;
 

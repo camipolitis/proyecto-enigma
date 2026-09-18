@@ -6,7 +6,7 @@ using Enigma.Player;
 
 namespace Enigma.CameraSystem
 {
-    // Blend de c·mara hacia un ZoomAnchor, sale con Q (Back)
+    // Blend de cùmara hacia un ZoomAnchor, sale con Q (Back)
     public class InteractionZoomController : MonoBehaviour
     {
         public static InteractionZoomController Instance { get; private set; }
@@ -28,11 +28,13 @@ namespace Enigma.CameraSystem
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (Instance != null && Instance != this &&
+                Instance.gameObject.scene == gameObject.scene)
             {
-                Destroy(gameObject);
+                Destroy(this);
                 return;
             }
+
             Instance = this;
         }
 
@@ -73,7 +75,7 @@ namespace Enigma.CameraSystem
             _allowsInventory = false;
             ZoomTarget = null;
 
-            ModalStack.Instance?.TryPopSpecific(ModalKind.Zoom);
+            ModalStack.Instance?.TryRemove(ModalKind.Zoom);
 
             if (_blendRoutine != null)
                 StopCoroutine(_blendRoutine);

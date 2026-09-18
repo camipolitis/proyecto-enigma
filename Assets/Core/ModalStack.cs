@@ -21,11 +21,13 @@ namespace Enigma.Core
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (Instance != null && Instance != this &&
+                Instance.gameObject.scene == gameObject.scene)
             {
-                Destroy(gameObject);
+                Destroy(this);
                 return;
             }
+
             Instance = this;
         }
 
@@ -70,7 +72,17 @@ namespace Enigma.Core
             _stack.RemoveAt(_stack.Count - 1);
             OnStackChanged?.Invoke();
             return true;
-           
+        }
+
+        public bool TryRemove(ModalKind kind)
+        {
+            int index = _stack.LastIndexOf(kind);
+            if (index < 0)
+                return false;
+
+            _stack.RemoveAt(index);
+            OnStackChanged?.Invoke();
+            return true;
         }
 
         public void ClearAll()

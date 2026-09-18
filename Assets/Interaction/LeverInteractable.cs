@@ -10,6 +10,7 @@ namespace Enigma.Interaction
         [SerializeField] private float failedAngle = 25f;
         [SerializeField] private float successAngle = 45f;
         [SerializeField] private float animDuration = 0.35f;
+        [SerializeField] private GameObject sparkPrefab;
 
         private bool _activated;
         private Coroutine _anim;
@@ -25,11 +26,21 @@ namespace Enigma.Interaction
         {
             _activated = true;
             PlayAngle(successAngle);
+            SpawnSpark();
         }
 
         protected override void HandleFailExtra(InteractContext context)
         {
             PlayAngle(failedAngle, returnBack: true);
+        }
+
+        private void SpawnSpark()
+        {
+            if (sparkPrefab == null)
+                return;
+
+            Vector3 pos = leverPivot != null ? leverPivot.position : transform.position;
+            Instantiate(sparkPrefab, pos, Quaternion.identity);
         }
 
         private void PlayAngle(float angle, bool returnBack = false)

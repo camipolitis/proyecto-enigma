@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Enigma.UI
 {
-    // Escucha Pause del input y delega en PauseSystem.
+    // Escucha Pause del input y delega en PauseSystem. Q no reanuda.
     public class PauseUI : MonoBehaviour
     {
         [SerializeField] private PlayerInputHandler input;
@@ -17,8 +17,6 @@ namespace Enigma.UI
 
             if (input.PausePressedThisFrame)
                 pauseSystem.Toggle();
-            else if (pauseSystem.IsPaused && input.BackPressedThisFrame)
-                pauseSystem.Resume();
         }
     }
 }

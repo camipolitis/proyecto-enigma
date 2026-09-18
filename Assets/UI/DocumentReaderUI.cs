@@ -9,7 +9,7 @@ using UnityEngine.UI;
 namespace Enigma.UI
 {
     // Lector de documentos. Q suelta la nota, guarda memoria la 1ra vez y dice "M..."
-    public class DocumentReaderUI : MonoBehaviour
+    public class DocumentReaderUI : ModalUIBase
     {
         [SerializeField] private GameObject root;
         [SerializeField] private Text titleLabel;
@@ -21,7 +21,13 @@ namespace Enigma.UI
 
         private DocumentData _current;
         private InteractContext _context;
-        private bool _open;
+
+        protected override ModalKind Kind => ModalKind.Document;
+        protected override GameObject ModalRoot => root;
+        protected override PlayerInputHandler Input => input;
+
+        private MemoryJournal LiveJournal =>
+            MemoryJournal.Instance != null ? MemoryJournal.Instance : journal;
 
         private void Start()
         {
@@ -31,22 +37,13 @@ namespace Enigma.UI
 
         private void Update()
         {
-            if (!_open || input == null)
-                return;
-
-            if (input.BackPressedThisFrame &&
-                (ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.Document)))
-                Close();
+            TryCloseWithBack();
         }
 
         public void Open(DocumentData document, InteractContext context)
         {
             _current = document;
             _context = context;
-            _open = true;
-
-            if (root != null)
-                root.SetActive(true);
 
             bool hasImage = document != null && document.viewImage != null;
             if (viewImage != null)
@@ -68,54 +65,54 @@ namespace Enigma.UI
                 bodyLabel.text = document != null ? document.body : string.Empty;
             }
 
-            ModalStack.Instance?.Push(ModalKind.Document);
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            OpenModal();
         }
 
-        public void Close()
+        public void OpenFromJournal(DocumentData document)
         {
-            if (!_open)
+            Open(document, null);
+        }
+
+        public override void Close()
+        {
+            if (!IsOpen)
                 return;
 
-            _open = false;
-            if (root != null)
-                root.SetActive(false);
+            var closing = _current;
+            var ctx = _context;
+            base.Close();
 
-            ModalStack.Instance?.TryPopSpecific(ModalKind.Document);
-
-            if (_current != null)
+            if (closing != null)
             {
-                bool firstTime = journal != null && journal.TryAdd(_current);
+                bool firstTime = LiveJournal != null && LiveJournal.TryAdd(closing);
                 if (firstTime)
                 {
                     GameFlagSystem.Instance?.Set("note_read", true);
-                    journalUi?.ShowToast(_current.memoryCollectedMessage);
+                    journalUi?.ShowToast(closing.memoryCollectedMessage);
                 }
 
-                PlayReleaseLine();
+                PlayReleaseLine(ctx, closing);
             }
 
             _current = null;
             _context = null;
-            ModalStack.Instance?.ApplyCursorForTop();
         }
 
-        private void PlayReleaseLine()
+        private void PlayReleaseLine(InteractContext ctx, DocumentData doc)
         {
-            if (_context?.Subtitles == null)
+            if (ctx?.Subtitles == null || doc == null)
                 return;
 
-            var set = _context.Dialogue;
-            if (set != null && !string.IsNullOrEmpty(_current.releaseDialogueId) &&
-                set.TryGet(_current.releaseDialogueId, out var spoken))
+            var set = ctx.Dialogue;
+            if (set != null && !string.IsNullOrEmpty(doc.releaseDialogueId) &&
+                set.TryGet(doc.releaseDialogueId, out var spoken))
             {
-                _context.Subtitles.Show(spoken.text, spoken.duration, spoken.voice);
+                ctx.Subtitles.Show(spoken.text, spoken.duration, spoken.voice);
                 return;
             }
 
-            string line = string.IsNullOrEmpty(_current.releaseSubtitle) ? "M..." : _current.releaseSubtitle;
-            _context.Subtitles.Show(line, 1.5f);
+            string line = string.IsNullOrEmpty(doc.releaseSubtitle) ? "M..." : doc.releaseSubtitle;
+            ctx.Subtitles.Show(line, 1.5f);
         }
     }
 }

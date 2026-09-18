@@ -5,6 +5,7 @@ using Enigma.Core;
 namespace Enigma.Player
 {
     // Lee InputSystem_Actions por código y expone estado + eventos
+    [DefaultExecutionOrder(-100)]
     public class PlayerInputHandler : MonoBehaviour
     {
         [SerializeField] private InputActionAsset inputActions;
@@ -22,6 +23,7 @@ namespace Enigma.Player
         private InputAction _crouch;
         private InputAction _previous;
         private InputAction _next;
+        private bool _backConsumed;
 
         public Vector2 MoveInput { get; private set; }
         public Vector2 LookInput { get; private set; }
@@ -86,6 +88,7 @@ namespace Enigma.Player
             InventoryPressedThisFrame = false;
             PreviousPressedThisFrame = false;
             NextPressedThisFrame = false;
+            _backConsumed = false;
 
             if (_pause == null)
                 return;
@@ -123,6 +126,16 @@ namespace Enigma.Player
             JumpPressed = _jump.WasPressedThisFrame();
             CrouchPressedThisFrame = _crouch.WasPressedThisFrame();
             CrouchHeld = _crouch.IsPressed();
+        }
+
+        // Un solo modal por frame se queda con Q.
+        public bool TryConsumeBack()
+        {
+            if (!BackPressedThisFrame || _backConsumed)
+                return false;
+
+            _backConsumed = true;
+            return true;
         }
 
         public void SetGameplayInputEnabled(bool enabled)

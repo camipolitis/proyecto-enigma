@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Enigma.Memory
 {
-    // Registro de memorias (notas leídas). 
+    // Registro de memorias (notas leídas). Sobrevive N1→N2.
     public class MemoryJournal : MonoBehaviour
     {
         public static MemoryJournal Instance { get; private set; }
@@ -23,7 +23,10 @@ namespace Enigma.Memory
                 Destroy(gameObject);
                 return;
             }
+
             Instance = this;
+            transform.SetParent(null);
+            DontDestroyOnLoad(gameObject);
         }
 
         private void OnDestroy()
