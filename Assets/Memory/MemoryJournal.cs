@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Enigma.Memory
 {
-    // Registro de memorias (notas leídas). Sobrevive N1→N2.
+    // Registro de memorias (notas leídas). Persiste entre escenas.
     public class MemoryJournal : MonoBehaviour
     {
         public static MemoryJournal Instance { get; private set; }
@@ -20,7 +20,21 @@ namespace Enigma.Memory
         {
             if (Instance != null && Instance != this)
             {
-                Destroy(gameObject);
+                // El journal de esta escena toma Instance y hereda las notas.
+                var previo = Instance;
+                for (int i = 0; i < previo._entries.Count; i++)
+                {
+                    var doc = previo._entries[i];
+                    if (doc == null || string.IsNullOrEmpty(doc.id))
+                        continue;
+                    if (_ids.Add(doc.id))
+                        _entries.Add(doc);
+                }
+
+                Instance = this;
+                transform.SetParent(null);
+                DontDestroyOnLoad(gameObject);
+                Destroy(previo.gameObject);
                 return;
             }
 

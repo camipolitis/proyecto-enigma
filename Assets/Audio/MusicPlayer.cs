@@ -12,6 +12,8 @@ namespace Enigma.Audio
         [SerializeField] private AudioClip pauseLoop;
         [SerializeField] private AudioClip level01Loop;
         [SerializeField] private AudioClip level02Loop;
+        [SerializeField] private AudioClip level03Loop;
+        [SerializeField] private AudioClip level04Loop;
 
         private AudioSource _source;
         private bool _pauseMusic;
@@ -81,8 +83,12 @@ namespace Enigma.Audio
                 clip = level01Loop;
             else if (sceneName == "Level02_Lab")
                 clip = level02Loop;
+            else if (sceneName == "Level03_Archives")
+                clip = level03Loop;
+            else if (sceneName == "Level04_Origen")
+                clip = level04Loop;
             else if (sceneName != "MainMenu")
-                clip = level01Loop;
+                clip = null;
 
             if (clip == null)
             {

@@ -23,7 +23,20 @@ namespace Enigma.Player
         private InputAction _crouch;
         private InputAction _previous;
         private InputAction _next;
+        private InputAction _hotbarScroll;
         private bool _backConsumed;
+
+        private static readonly Key[] HotbarDigitKeys =
+        {
+            Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4,
+            Key.Digit5, Key.Digit6, Key.Digit7, Key.Digit8
+        };
+
+        private static readonly Key[] HotbarNumpadKeys =
+        {
+            Key.Numpad1, Key.Numpad2, Key.Numpad3, Key.Numpad4,
+            Key.Numpad5, Key.Numpad6, Key.Numpad7, Key.Numpad8
+        };
 
         public Vector2 MoveInput { get; private set; }
         public Vector2 LookInput { get; private set; }
@@ -37,6 +50,8 @@ namespace Enigma.Player
         public bool InventoryPressedThisFrame { get; private set; }
         public bool PreviousPressedThisFrame { get; private set; }
         public bool NextPressedThisFrame { get; private set; }
+        public int HotbarSlotPressedThisFrame { get; private set; } = -1;
+        // 0-7 = tecla 1-8; -1 = ninguna.
 
         public bool GameplayInputEnabled { get; private set; } = true;
 
@@ -62,6 +77,7 @@ namespace Enigma.Player
             _crouch = _playerMap.FindAction("Crouch", true);
             _previous = _playerMap.FindAction("Previous", true);
             _next = _playerMap.FindAction("Next", true);
+            _hotbarScroll = _playerMap.FindAction("HotbarScroll");
 
             if (isActiveAndEnabled)
                 _playerMap.Enable();
@@ -88,6 +104,7 @@ namespace Enigma.Player
             InventoryPressedThisFrame = false;
             PreviousPressedThisFrame = false;
             NextPressedThisFrame = false;
+            HotbarSlotPressedThisFrame = -1;
             _backConsumed = false;
 
             if (_pause == null)
@@ -100,16 +117,10 @@ namespace Enigma.Player
 
             bool paused = PauseSystem.Instance != null && PauseSystem.Instance.IsPaused;
             bool blockHotbar = paused ||
-                (ModalStack.Instance != null &&
-                 (ModalStack.Instance.Contains(ModalKind.Pause) ||
-                  ModalStack.Instance.Contains(ModalKind.Document) ||
-                  ModalStack.Instance.Contains(ModalKind.CodeEntry)));
+                (ModalStack.Instance != null && ModalStack.Instance.BlocksWorldInteract());
 
             if (GameplayInputEnabled && !blockHotbar)
-            {
-                PreviousPressedThisFrame = _previous.WasPressedThisFrame();
-                NextPressedThisFrame = _next.WasPressedThisFrame();
-            }
+                ReadHotbar();
 
             bool blocked = ModalStack.Instance != null && ModalStack.Instance.BlocksGameplay();
             if (!GameplayInputEnabled || blocked || paused)
@@ -126,6 +137,47 @@ namespace Enigma.Player
             JumpPressed = _jump.WasPressedThisFrame();
             CrouchPressedThisFrame = _crouch.WasPressedThisFrame();
             CrouchHeld = _crouch.IsPressed();
+        }
+
+        // Rueda cicla el slot; 1-8 saltan directo.
+        private void ReadHotbar()
+        {
+            if (_previous != null && _previous.WasPressedThisFrame())
+                PreviousPressedThisFrame = true;
+            if (_next != null && _next.WasPressedThisFrame())
+                NextPressedThisFrame = true;
+
+            float scroll = ReadScrollDelta();
+            if (scroll > 0.0001f)
+                PreviousPressedThisFrame = true;
+            else if (scroll < -0.0001f)
+                NextPressedThisFrame = true;
+
+            var kb = Keyboard.current;
+            if (kb == null)
+                return;
+
+            for (int i = 0; i < 8; i++)
+            {
+                if (kb[HotbarDigitKeys[i]].wasPressedThisFrame ||
+                    kb[HotbarNumpadKeys[i]].wasPressedThisFrame)
+                {
+                    HotbarSlotPressedThisFrame = i;
+                    return;
+                }
+            }
+        }
+
+        private float ReadScrollDelta()
+        {
+            Vector2 delta = Vector2.zero;
+            if (_hotbarScroll != null)
+                delta = _hotbarScroll.ReadValue<Vector2>();
+
+            if (delta.sqrMagnitude < 0.0000001f && Mouse.current != null)
+                delta = Mouse.current.scroll.ReadValue();
+
+            return Mathf.Abs(delta.y) >= Mathf.Abs(delta.x) ? delta.y : delta.x;
         }
 
         // Un solo modal por frame se queda con Q.

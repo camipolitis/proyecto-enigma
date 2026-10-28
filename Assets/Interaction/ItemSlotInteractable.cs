@@ -3,13 +3,13 @@ using UnityEngine;
 
 namespace Enigma.Interaction
 {
-    // Receptáculo que consume el ítem seleccionado (caja eléctrica, etc.)
+    // Receptáculo que consume el ítem requerido (caja eléctrica, etc.)
     public class ItemSlotInteractable : InteractableBase
     {
         [SerializeField] private GameObject insertedVisual;
         [SerializeField] private bool consumeItem = true;
         [SerializeField] private string placePrompt = "Colocar fusible";
-        // Prompt cuando el ítem requerido está seleccionado.
+        // Prompt cuando el ítem requerido está en el inventario.
 
         public override bool AllowsInventoryWhileZoom =>
             config != null ? config.allowsInventoryWhileZoom : true;
@@ -18,8 +18,8 @@ namespace Enigma.Interaction
         public override string GetPrompt(InteractContext context)
         {
             if (config != null && config.requiredItem != null &&
-                context != null && context.SelectedItem != null &&
-                context.SelectedItem.id == config.requiredItem.id)
+                context != null && context.Inventory != null &&
+                context.Inventory.Has(config.requiredItem))
             {
                 string p = string.IsNullOrEmpty(placePrompt) ? "Colocar ítem" : placePrompt;
                 return $"[E] {p}";
