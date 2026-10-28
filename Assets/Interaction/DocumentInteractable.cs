@@ -24,16 +24,16 @@ namespace Enigma.Interaction
         protected override void HandleSuccessExtra(InteractContext context)
         {
             if (readerUi == null)
-            {
-                Debug.LogWarning("DocumentInteractable sin DocumentReaderUI.");
                 return;
-            }
 
             if (RequiresZoom && InteractionZoomController.Instance != null &&
                 !InteractionZoomController.Instance.IsZooming)
             {
                 InteractionZoomController.Instance.EnterZoom(ZoomAnchor, false, this);
             }
+
+            if (config != null && !string.IsNullOrEmpty(config.successFlagId))
+                Enigma.Core.GameFlagSystem.Instance?.Set(config.successFlagId, true);
 
             readerUi.Open(document, context);
             // Open registra memoria al cerrar con Q la primera vez.

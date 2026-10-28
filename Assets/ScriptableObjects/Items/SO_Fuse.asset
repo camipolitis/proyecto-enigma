@@ -15,4 +15,5 @@ MonoBehaviour:
   id: fuse
   displayName: Fusible
   icon: {fileID: 0}
-  description: 'Fusible '
+  description: "Fusible de la caja el\xE9ctrica."
+  inspectDoc: {fileID: 0}
