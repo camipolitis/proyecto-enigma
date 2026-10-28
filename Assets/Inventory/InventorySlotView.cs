@@ -13,9 +13,15 @@ namespace Enigma.Inventory
         [SerializeField] private InventoryUI owner;
         [SerializeField] private int index;
 
+        private void Awake()
+        {
+            EnsureLabel();
+        }
+
         public void Bind(InventoryItem item, bool selected, int slotIndex)
         {
             index = slotIndex;
+            EnsureLabel();
 
             if (iconImage != null)
             {
@@ -32,7 +38,13 @@ namespace Enigma.Inventory
             }
 
             if (legacyLabel != null)
-                legacyLabel.text = item != null ? item.displayName : string.Empty;
+            {
+                string n = (slotIndex + 1).ToString();
+                legacyLabel.text = item != null ? n + "  " + item.displayName : n;
+                legacyLabel.fontStyle = selected ? FontStyle.Bold : FontStyle.Normal;
+                legacyLabel.fontSize = selected ? 16 : 12;
+                legacyLabel.color = selected ? Color.white : new Color(0.7f, 0.7f, 0.7f, 1f);
+            }
 
             if (highlightImage != null)
                 highlightImage.enabled = selected;
@@ -41,6 +53,32 @@ namespace Enigma.Inventory
         public void ButtonClick()
         {
             owner?.OnSlotClicked(index);
+        }
+
+        private void EnsureLabel()
+        {
+            if (legacyLabel == null)
+                legacyLabel = GetComponentInChildren<Text>(true);
+            if (legacyLabel != null)
+                return;
+
+            var go = new GameObject("SlotLabel");
+            go.transform.SetParent(transform, false);
+            var rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(2f, 2f);
+            rt.offsetMax = new Vector2(-2f, -2f);
+            legacyLabel = go.AddComponent<Text>();
+            legacyLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (legacyLabel.font == null)
+                legacyLabel.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            legacyLabel.alignment = TextAnchor.MiddleCenter;
+            legacyLabel.fontSize = 12;
+            legacyLabel.color = Color.white;
+            legacyLabel.raycastTarget = false;
+            legacyLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+            legacyLabel.verticalOverflow = VerticalWrapMode.Overflow;
         }
     }
 }

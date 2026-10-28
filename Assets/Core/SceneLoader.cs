@@ -33,16 +33,17 @@ namespace Enigma.Core
         public void LoadSceneByName(string sceneName)
         {
             if (string.IsNullOrEmpty(sceneName))
-            {
-                Debug.LogWarning("SceneLoader: nombre de escena vacío.");
                 return;
-            }
 
             Time.timeScale = 1f;
 
-            if (sceneName == "MainMenu" && MemoryJournal.Instance != null)
-                Destroy(MemoryJournal.Instance.gameObject);
-            // Partida nueva: las notas no cruzan al menú.
+            if (sceneName == "MainMenu")
+            {
+                GameFlagSystem.ClearCarry();
+                if (MemoryJournal.Instance != null)
+                    Destroy(MemoryJournal.Instance.gameObject);
+                // Partida nueva: flags y notas no cruzan al menú.
+            }
 
             SceneManager.LoadScene(sceneName);
         }

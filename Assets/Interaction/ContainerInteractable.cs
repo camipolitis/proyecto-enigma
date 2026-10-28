@@ -16,12 +16,15 @@ namespace Enigma.Interaction
         // Desplazamiento local al abrir (ej. cajón en X).
 
         [SerializeField] private bool opened;
+
         [SerializeField] private GameObject[] revealOnOpen;
 
         protected override bool MeetsSuccessConditions(InteractContext context)
         {
-            return !opened;
             // Una sola apertura; después el fusible se recoge aparte si quedó en escena.
+            if (opened)
+                return false;
+            return base.MeetsSuccessConditions(context);
         }
 
         protected override void HandleSuccessExtra(InteractContext context)

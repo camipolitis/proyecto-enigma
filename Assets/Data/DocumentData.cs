@@ -25,5 +25,8 @@ namespace Enigma.Data
 
         public Texture2D viewImage;
         // Si hay imagen, el lector la muestra en vez del body.
+
+        public AudioClip openVoice;
+        // Clip al abrir (cassette). Vacío = solo texto.
     }
 }

@@ -99,12 +99,23 @@ namespace Enigma.Core
 
         public bool AllowsInventoryOpen()
         {
-            if (Contains(ModalKind.Pause) || Contains(ModalKind.Document) || Contains(ModalKind.CodeEntry))
+            if (Contains(ModalKind.Pause) || Contains(ModalKind.Document) ||
+                Contains(ModalKind.CodeEntry) || Contains(ModalKind.WirePuzzle) ||
+                Contains(ModalKind.WordEntry) || Contains(ModalKind.ArrowLock) ||
+                Contains(ModalKind.Computer))
                 return false;
-            // Pause, lectura y código bloquean el inventario
+            // Pause, lectura y puzzles de UI bloquean el inventario
 
             return true;
             // Zoom se valida aparte con allowsInventoryWhileZoom
+        }
+
+        public bool BlocksWorldInteract()
+        {
+            return Contains(ModalKind.Pause) || Contains(ModalKind.Document) ||
+                   Contains(ModalKind.CodeEntry) || Contains(ModalKind.WirePuzzle) ||
+                   Contains(ModalKind.WordEntry) || Contains(ModalKind.ArrowLock) ||
+                   Contains(ModalKind.Computer) || Contains(ModalKind.Inventory);
         }
 
         public void ApplyCursorForTop()
@@ -113,7 +124,11 @@ namespace Enigma.Core
             bool uiOpen = top == ModalKind.Pause ||
                           top == ModalKind.Document ||
                           top == ModalKind.CodeEntry ||
-                          top == ModalKind.Inventory;
+                          top == ModalKind.Inventory ||
+                          top == ModalKind.WirePuzzle ||
+                          top == ModalKind.WordEntry ||
+                          top == ModalKind.ArrowLock ||
+                          top == ModalKind.Computer;
             Cursor.lockState = uiOpen ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = uiOpen;
         }

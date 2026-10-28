@@ -1,11 +1,12 @@
 using Enigma.CameraSystem;
 using Enigma.Core;
 using Enigma.Player;
+using Enigma.UI;
 using UnityEngine;
 
 namespace Enigma.Inventory
 {
-    // UI del hotbar de 8 slots + apertura con Tab 
+    // Hotbar de 8 slots.
     public class InventoryUI : MonoBehaviour
     {
         [SerializeField] private InventorySystem inventory;
@@ -17,7 +18,7 @@ namespace Enigma.Inventory
         [SerializeField] private bool hotbarAlwaysVisible = true;
         // Hotbar visible en exploración
 
-        private bool _panelOpen;
+        [SerializeField] private DocumentReaderUI readerUi;
 
         private void OnEnable()
         {
@@ -33,6 +34,9 @@ namespace Enigma.Inventory
 
         private void Start()
         {
+            if (readerUi == null)
+                readerUi = FindFirstObjectByType<DocumentReaderUI>();
+
             if (panelRoot != null && !hotbarAlwaysVisible)
                 panelRoot.SetActive(false);
             Refresh();
@@ -47,27 +51,18 @@ namespace Enigma.Inventory
                 inventory.SelectPrevious();
             if (input.NextPressedThisFrame)
                 inventory.SelectNext();
+            if (input.HotbarSlotPressedThisFrame >= 0)
+                inventory.SelectIndex(input.HotbarSlotPressedThisFrame);
 
             if (input.InventoryPressedThisFrame)
-                TogglePanel();
-
-            if (_panelOpen &&
-                (ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.Inventory)) &&
-                input.TryConsumeBack())
-                ClosePanel();
+                TryInspectSelected();
         }
 
-        private void TogglePanel()
+        private void TryInspectSelected()
         {
-            if (_panelOpen)
-            {
-                ClosePanel();
-                return;
-            }
-
             if (ModalStack.Instance != null && !ModalStack.Instance.AllowsInventoryOpen())
                 return;
-            // Documento/pause bloquean.
+            // Documento, pad, PC y pause se quedan con el teclado.
 
             if (InteractionZoomController.Instance != null &&
                 InteractionZoomController.Instance.IsZooming &&
@@ -75,29 +70,14 @@ namespace Enigma.Inventory
                 return;
             // Zoom de nota no permite inventario.
 
-            OpenPanel();
+            InspectSelected();
         }
 
-        private void OpenPanel()
+        public void Hide()
         {
-            _panelOpen = true;
             if (panelRoot != null)
-                panelRoot.SetActive(true);
-            ModalStack.Instance?.Push(ModalKind.Inventory);
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-
-        private void ClosePanel()
-        {
-            if (!_panelOpen)
-                return;
-
-            _panelOpen = false;
-            if (panelRoot != null && !hotbarAlwaysVisible)
                 panelRoot.SetActive(false);
-            ModalStack.Instance?.TryPopSpecific(ModalKind.Inventory);
-            ModalStack.Instance?.ApplyCursorForTop();
+            enabled = false;
         }
 
         private void Refresh()
@@ -115,7 +95,19 @@ namespace Enigma.Inventory
 
         public void OnSlotClicked(int index)
         {
-            inventory?.SelectIndex(index);
+            if (inventory == null)
+                return;
+
+            inventory.SelectIndex(index);
+        }
+
+        private void InspectSelected()
+        {
+            if (readerUi == null)
+                readerUi = FindFirstObjectByType<DocumentReaderUI>();
+            if (readerUi == null || inventory == null)
+                return;
+            readerUi.Inspect(inventory.SelectedItem);
         }
     }
 }
