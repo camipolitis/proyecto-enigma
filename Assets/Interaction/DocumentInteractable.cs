@@ -35,6 +35,7 @@ namespace Enigma.Interaction
             if (config != null && !string.IsNullOrEmpty(config.successFlagId))
                 Enigma.Core.GameFlagSystem.Instance?.Set(config.successFlagId, true);
 
+            Enigma.Audio.SfxPlayer.Instance?.Play("note_pickup");
             readerUi.Open(document, context);
             // Open registra memoria al cerrar con Q la primera vez.
         }

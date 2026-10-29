@@ -22,6 +22,7 @@ namespace Enigma.UI
         {
             if (target == null)
                 return;
+            Enigma.Audio.SfxPlayer.Instance?.Play("ui_click");
             if (backspace)
                 target.PressBackspace();
             else if (submit)
