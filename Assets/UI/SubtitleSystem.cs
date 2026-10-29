@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Enigma.Audio;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -35,6 +36,24 @@ namespace Enigma.UI
                 root.SetActive(false);
             if (voiceSource == null)
                 voiceSource = GetComponent<AudioSource>();
+
+            RouteVoice();
+        }
+
+        private void Start()
+        {
+            RouteVoice();
+        }
+
+        public bool IsVoicePlaying => voiceSource != null && voiceSource.isPlaying;
+
+        private void RouteVoice()
+        {
+            if (voiceSource == null || voiceSource.outputAudioMixerGroup != null)
+                return;
+            var buses = AudioStateDriver.Instance;
+            if (buses != null)
+                voiceSource.outputAudioMixerGroup = buses.VoiceGroup;
         }
 
         private void OnDestroy()

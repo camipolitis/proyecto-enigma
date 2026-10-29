@@ -26,12 +26,14 @@ namespace Enigma.UI
 
         private string _buffer = string.Empty;
         private Action _onSuccess;
+        private float _armedAt;
 
         protected override ModalKind Kind => ModalKind.CodeEntry;
         protected override GameObject ModalRoot => root;
         protected override PlayerInputHandler Input => input;
 
         private bool IsTop => ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.CodeEntry);
+        private bool Armed => Time.unscaledTime >= _armedAt;
 
         private void Start()
         {
@@ -67,12 +69,11 @@ namespace Enigma.UI
         public void Open()
         {
             _buffer = string.Empty;
+            _armedAt = Time.unscaledTime + 0.25f;
             RefreshDisplay();
             OpenModal();
-
-            var firstKey = root != null ? root.GetComponentInChildren<CodePadKey>(true) : null;
-            if (firstKey != null && EventSystem.current != null)
-                EventSystem.current.SetSelectedGameObject(firstKey.gameObject);
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(null);
         }
 
         public void Close(bool success)
@@ -87,14 +88,14 @@ namespace Enigma.UI
 
         public void PressDigit(int digit)
         {
-            if (!IsOpen || !IsTop)
+            if (!IsOpen || !IsTop || !Armed)
                 return;
             AppendDigit((char)('0' + Mathf.Clamp(digit, 0, 9)));
         }
 
         public void PressBackspace()
         {
-            if (!IsOpen || !IsTop || _buffer.Length == 0)
+            if (!IsOpen || !IsTop || !Armed || _buffer.Length == 0)
                 return;
             _buffer = _buffer.Substring(0, _buffer.Length - 1);
             RefreshDisplay();
@@ -102,13 +103,15 @@ namespace Enigma.UI
 
         public void PressSubmit()
         {
-            if (!IsOpen || !IsTop)
+            if (!IsOpen || !IsTop || !Armed)
                 return;
             Submit();
         }
 
         private void ReadDigits()
         {
+            if (!Armed)
+                return;
             var kb = Keyboard.current;
             if (kb == null)
                 return;
@@ -155,6 +158,7 @@ namespace Enigma.UI
             {
                 _buffer = string.Empty;
                 RefreshDisplay();
+                Enigma.Audio.SfxPlayer.Instance?.Play("password_error");
                 PlayFailLine();
             }
         }

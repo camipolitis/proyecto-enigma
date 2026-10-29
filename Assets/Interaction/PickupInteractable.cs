@@ -1,3 +1,4 @@
+using Enigma.Audio;
 using Enigma.Data;
 using UnityEngine;
 
@@ -17,6 +18,7 @@ namespace Enigma.Interaction
         protected override void HandleSuccessExtra(InteractContext context)
         {
             context.Inventory.Add(item);
+            SfxPlayer.Instance?.Play("item_pickup");
             if (disableOnPickup)
                 gameObject.SetActive(false);
         }

@@ -1,3 +1,4 @@
+using Enigma.Audio;
 using Enigma.CameraSystem;
 using Enigma.Core;
 using Enigma.Data;
@@ -113,6 +114,8 @@ namespace Enigma.Interaction
 
         protected virtual void OnFail(InteractContext context)
         {
+            if (config != null && config.failDialogueId == "door_locked")
+                SfxPlayer.Instance?.Play("door_locked", transform.position);
             PlayDialogue(context, config != null ? config.failDialogueId : null);
             HandleFailExtra(context);
         }

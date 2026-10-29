@@ -1,4 +1,5 @@
 using System.Collections;
+using Enigma.Audio;
 using Enigma.Core;
 using Enigma.Data;
 using Enigma.UI;
@@ -69,7 +70,10 @@ namespace Enigma.Interaction
                 dialogue.TryGet(lineId, out var line))
                 subs.Show(line.text, line.duration, line.voice);
             if (hatchPivot != null)
+            {
+                SfxPlayer.Instance?.Play("hatch", hatchPivot.position);
                 StartCoroutine(OpenHatch());
+            }
         }
 
         private void SnapOpen()

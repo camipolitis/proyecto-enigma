@@ -528,6 +528,9 @@ GameObject:
   m_Component:
   - component: {fileID: 210000352}
   - component: {fileID: 210000304}
+  - component: {fileID: 210000305}
+  - component: {fileID: 210000306}
+  - component: {fileID: 210000307}
   m_Layer: 0
   m_Name: MusicPlayer
   m_TagString: Untagged
@@ -566,6 +569,103 @@ MonoBehaviour:
   pauseLoop: {fileID: 8300000, guid: 7f2b9d41c8e54a13b6a0e3d95c184720, type: 3}
   level01Loop: {fileID: 8300000, guid: a5d83e70f2164b9c8e4a1d027b593846, type: 3}
   level02Loop: {fileID: 8300000, guid: 0e91c4b6a37d4f28b5d8e2a1c9460735, type: 3}
+  level03Loop: {fileID: 0}
+  level04Loop: {fileID: 0}
+  tensionLoop: {fileID: 0}
+  resolveSting: {fileID: 0}
+  musicGroup: {fileID: 24300006, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
+  crossfadeSeconds: 0.6
+  resolveFadeSeconds: 1.2
+--- !u!114 &210000305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 210000351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d2e3f4a5b69708192a3b4c5d6e7f809, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Audio.SfxPlayer
+  bank: {fileID: 11400000, guid: bf4a5b69708192a3b4c5d6e7f8091a2b, type: 2}
+  sfxGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
+  voices: 8
+--- !u!114 &210000306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 210000351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae3f4a5b69708192a3b4c5d6e7f8091a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Audio.AudioStateDriver
+  mixer: {fileID: 24100000, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
+  musicGroup: {fileID: 24300002, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
+  sfxGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
+  ambientGroup: {fileID: 24300004, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
+  voiceGroup: {fileID: 24300005, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
+  musicDuckParam: MusicDuck
+  tensionLowpassParam: TensionLowpass
+  duckDb: -12
+  openCutoff: 22000
+  muffledCutoff: 900
+  lerpSpeed: 6
+--- !u!114 &210000307
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 210000351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a2b3c4d5e6f708192a3b4c5d6e7f809, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Audio.AmbientDirector
+  ambientGroup: {fileID: 24300004, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
+  interiorLoop: {fileID: 0}
+  pitLoop: {fileID: 0}
+  bedVolume: 0.22
+  points:
+  - id: Amb3D_Fluorescent
+    sceneName: Level01_Room
+    worldPosition: {x: 0, y: 2.2, z: 0}
+    clip: {fileID: 0}
+    minDistance: 1.5
+    maxDistance: 10
+    volume: 0.32
+  - id: Amb3D_Generator
+    sceneName: Level02_Lab
+    worldPosition: {x: 0, y: 1.2, z: 0.5}
+    clip: {fileID: 0}
+    minDistance: 1.2
+    maxDistance: 12
+    volume: 0.38
+  - id: Amb3D_HatchAir
+    sceneName: Level03_Archives
+    worldPosition: {x: 0, y: 0.4, z: 2.4}
+    clip: {fileID: 0}
+    minDistance: 1
+    maxDistance: 11
+    volume: 0.34
+  - id: Amb3D_Pipes
+    sceneName: Level03_Mezzanine
+    worldPosition: {x: 0, y: 1.6, z: -2.4}
+    clip: {fileID: 0}
+    minDistance: 1.2
+    maxDistance: 10
+    volume: 0.3
+  - id: Amb3D_PitDrip
+    sceneName: Level04_Origen
+    worldPosition: {x: 0, y: -2.4, z: 0}
+    clip: {fileID: 0}
+    minDistance: 1.5
+    maxDistance: 14
+    volume: 0.4
 --- !u!1 &210000401
 GameObject:
   m_ObjectHideFlags: 0

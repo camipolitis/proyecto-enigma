@@ -25,6 +25,7 @@ namespace Enigma.Interaction
         protected override void HandleSuccessExtra(InteractContext context)
         {
             _activated = true;
+            Enigma.Audio.SfxPlayer.Instance?.Play("lever", transform.position);
             PlayAngle(successAngle);
             SpawnSpark();
         }

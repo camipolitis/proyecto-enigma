@@ -69,6 +69,9 @@ namespace Enigma.UI
 
             OpenModal();
 
+            if (document != null && document.tensionOnRead)
+                Enigma.Audio.MusicPlayer.Instance?.EnterTension();
+
             if (document != null && document.openVoice != null && SubtitleSystem.Instance != null)
                 SubtitleSystem.Instance.PlayClip(document.openVoice);
         }
@@ -127,6 +130,8 @@ namespace Enigma.UI
             var closing = _current;
             var ctx = _context;
             base.Close();
+
+            Enigma.Audio.MusicPlayer.Instance?.ExitTension();
 
             if (SubtitleSystem.Instance != null)
                 SubtitleSystem.Instance.StopVoice();
