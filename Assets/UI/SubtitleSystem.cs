@@ -71,6 +71,19 @@ namespace Enigma.UI
             _queue.Enqueue((text, duration, voice));
         }
 
+        public void PlayClip(AudioClip clip)
+        {
+            if (clip == null || voiceSource == null)
+                return;
+            voiceSource.PlayOneShot(clip);
+        }
+
+        public void StopVoice()
+        {
+            if (voiceSource != null)
+                voiceSource.Stop();
+        }
+
         private void ShowNext()
         {
             var (text, duration, voice) = _queue.Dequeue();

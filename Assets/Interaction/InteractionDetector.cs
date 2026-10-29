@@ -42,10 +42,7 @@ namespace Enigma.Interaction
                 return;
             }
 
-            if (ModalStack.Instance != null &&
-                (ModalStack.Instance.Contains(ModalKind.Document) ||
-                 ModalStack.Instance.Contains(ModalKind.Pause) ||
-                 ModalStack.Instance.Contains(ModalKind.CodeEntry)))
+            if (ModalStack.Instance != null && ModalStack.Instance.BlocksWorldInteract())
             {
                 ClearPrompt();
                 HandleBackOnly();

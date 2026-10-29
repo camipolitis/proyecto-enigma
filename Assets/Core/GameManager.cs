@@ -1,5 +1,6 @@
 using System.Collections;
 using Enigma.CameraSystem;
+using Enigma.Inventory;
 using Enigma.UI;
 using UnityEngine;
 using UnityEngine.Events;
@@ -110,12 +111,17 @@ namespace Enigma.Core
 
             if (sceneLoader != null && !string.IsNullOrEmpty(nextSceneName))
             {
+                if (GameFlagSystem.Instance != null && GameFlagSystem.Instance.Get("hatch_unlocked"))
+                    GameFlagSystem.Carry("hatch_unlocked");
                 sceneLoader.LoadSceneByName(nextSceneName);
                 yield break;
             }
 
             if (endPanel != null)
                 endPanel.SetActive(true);
+
+            var hotbar = FindFirstObjectByType<InventoryUI>();
+            hotbar?.Hide();
 
             if (screenFade != null)
             {

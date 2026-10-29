@@ -15,4 +15,5 @@ MonoBehaviour:
   id: battery
   displayName: "Bater\xEDa"
   icon: {fileID: 0}
-  description: Batería para el generador del laboratorio.
+  description: "Bater\xEDa para el generador del laboratorio."
+  inspectDoc: {fileID: 0}

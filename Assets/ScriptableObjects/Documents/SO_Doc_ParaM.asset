@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa121de79b4a42f47bd59a4d01fbcb6d, type: 3}
+  m_Name: SO_Doc_ParaM
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
+  id: para_m
+  title: PARA M
+  body: "M:\n\nSi lleg\xE1s hasta ac\xE1, mir\xE1 a la izquierda del miedo, otra vez a la izquierda del archivo, y una izquierda m\xE1s cuando el techo te mienta.\nDespu\xE9s and\xE1 a la derecha de lo que firmaste, a la derecha de la vela, a la derecha de las tres de la ma\xF1ana.\nVolv\xE9 a la izquierda del clip, a la izquierda del humo, y reci\xE9n ah\xED una derecha: la que no pusimos en el parte.\n\nNo dejes la credencial a la vista."
+  releaseSubtitle: "M..."
+  releaseDialogueId: note_release
+  memoryCollectedMessage: Memoria recolectada
+  viewImage: {fileID: 0}
+  openVoice: {fileID: 0}

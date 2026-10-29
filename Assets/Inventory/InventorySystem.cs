@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Enigma.Inventory
 {
-    // Inventario de 8 slots con selección para usar ítems en receptáculos.
+    // Inventario de 8 slots. La selección sirve para ver el objeto, no para colocarlo.
     public class InventorySystem : MonoBehaviour
     {
         public const int SlotCount = 8;
@@ -79,10 +79,17 @@ namespace Enigma.Inventory
         {
             if (item == null)
                 return false;
+            return RemoveById(item.id);
+        }
+
+        public bool RemoveById(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId))
+                return false;
 
             for (int i = 0; i < SlotCount; i++)
             {
-                if (_slots[i] != null && _slots[i].id == item.id)
+                if (_slots[i] != null && _slots[i].id == itemId)
                 {
                     _slots[i] = null;
                     OnChanged?.Invoke();

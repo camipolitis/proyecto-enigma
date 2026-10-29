@@ -11,7 +11,14 @@ namespace Enigma.Interaction
         [SerializeField] private GameObject[] enableOnUnlock;
         [SerializeField] private NotebookFolderUI notebookFolders;
 
-        protected override bool IsCompleted() => false;
+        protected override bool IsCompleted()
+        {
+            if (notebookFolders != null)
+                return false;
+            if (string.IsNullOrEmpty(unlockFlagId) || Enigma.Core.GameFlagSystem.Instance == null)
+                return false;
+            return Enigma.Core.GameFlagSystem.Instance.Get(unlockFlagId);
+        }
 
         protected override bool MeetsSuccessConditions(InteractContext context)
         {
@@ -68,10 +75,13 @@ namespace Enigma.Interaction
             if (!value || string.IsNullOrEmpty(unlockFlagId) || id != unlockFlagId)
                 return;
 
-            foreach (var go in enableOnUnlock)
+            if (enableOnUnlock != null)
             {
-                if (go != null)
-                    go.SetActive(true);
+                foreach (var go in enableOnUnlock)
+                {
+                    if (go != null)
+                        go.SetActive(true);
+                }
             }
 
             if (notebookFolders != null)
