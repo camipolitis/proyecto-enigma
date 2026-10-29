@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32c5ac0755d45e04aa04f68666b12acb, type: 3}
+  m_Name: SO_Level04_Dialogue
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DialogueLineSet
+  lines:
+  - id: door_locked
+    text: "Est\xE1 bloqueada..."
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 24e942fabb67fa24393ee225956068cc, type: 3}
+  - id: lock_fail
+    text: "Cu\xE1l ser\xE1 el c\xF3digo?..."
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 48971e6658eeaa540a650259dc02f9bf, type: 3}
+  - id: lock_ok
+    text: "Bien..."
+    duration: 2.0
+    voice: {fileID: 8300000, guid: ce49c5950a81ed54ab0de70cc6f71a35, type: 3}
+  - id: tape_pickup
+    text: "Esto puede servir..."
+    duration: 2.5
+    voice: {fileID: 8300000, guid: 0573b79e8d9e8334ea6a545e980b5bf2, type: 3}
+  - id: reel_need
+    text: "Est\xE1 vac\xEDo..."
+    duration: 2.5
+    voice: {fileID: 0}
+  - id: reel_ok
+    text: "Se prendi\xF3..."
+    duration: 2.5
+    voice: {fileID: 0}
+  - id: seq_fail
+    text: "No..."
+    duration: 2.5
+    voice: {fileID: 0}
+  - id: key_pickup
+    text: "Una llave..."
+    duration: 2.5
+    voice: {fileID: 0}
+  - id: note_release
+    text: "M..."
+    duration: 1.5
+    voice: {fileID: 8300000, guid: 2cf75e87f58db494d9f9756a6d3910a9, type: 3}
