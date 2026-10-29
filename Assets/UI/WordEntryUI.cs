@@ -22,24 +22,25 @@ namespace Enigma.UI
         [SerializeField] private string failDialogueId = "pc_password_fail";
 
         private string _buffer = string.Empty;
-        private Button _firstKey;
+        private float _armedAt;
 
         protected override ModalKind Kind => ModalKind.WordEntry;
         protected override GameObject ModalRoot => root;
         protected override PlayerInputHandler Input => input;
 
         private bool IsTop => ModalStack.Instance == null || ModalStack.Instance.IsTop(Kind);
+        private bool Armed => Time.unscaledTime >= _armedAt;
 
         public void Open()
         {
             if (root == null)
                 return;
             _buffer = string.Empty;
+            _armedAt = Time.unscaledTime + 0.25f;
             RefreshDisplay();
-            _firstKey = root.GetComponentInChildren<Button>(true);
             OpenModal();
-            if (_firstKey != null && EventSystem.current != null)
-                EventSystem.current.SetSelectedGameObject(_firstKey.gameObject);
+            if (EventSystem.current != null)
+                EventSystem.current.SetSelectedGameObject(null);
         }
 
         private void Update()
@@ -55,14 +56,14 @@ namespace Enigma.UI
 
         public void PressLetter(char letter)
         {
-            if (!IsOpen || !IsTop)
+            if (!IsOpen || !IsTop || !Armed)
                 return;
             Append(char.ToUpperInvariant(letter));
         }
 
         public void PressBackspace()
         {
-            if (!IsOpen || !IsTop || _buffer.Length == 0)
+            if (!IsOpen || !IsTop || !Armed || _buffer.Length == 0)
                 return;
             _buffer = _buffer.Substring(0, _buffer.Length - 1);
             RefreshDisplay();
@@ -70,13 +71,15 @@ namespace Enigma.UI
 
         public void PressSubmit()
         {
-            if (!IsOpen || !IsTop)
+            if (!IsOpen || !IsTop || !Armed)
                 return;
             Submit();
         }
 
         private void ReadLetters()
         {
+            if (!Armed)
+                return;
             var kb = Keyboard.current;
             if (kb == null)
                 return;
@@ -115,6 +118,7 @@ namespace Enigma.UI
             {
                 _buffer = string.Empty;
                 RefreshDisplay();
+                Enigma.Audio.SfxPlayer.Instance?.Play("password_error");
                 var subs = SubtitleSystem.Instance;
                 if (dialogue != null && !string.IsNullOrEmpty(failDialogueId) &&
                     dialogue.TryGet(failDialogueId, out var line))

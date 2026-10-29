@@ -1,3 +1,4 @@
+using Enigma.Audio;
 using Enigma.Core;
 using Enigma.Data;
 using UnityEngine;
@@ -35,6 +36,7 @@ namespace Enigma.Interaction
         {
             _pull = Mathf.Clamp01(_pull + step);
             ApplyPull();
+            SfxPlayer.Instance?.Play("magnet", transform.position);
             PlayDialogue(context, config != null ? config.successDialogueId : null);
 
             if (_pull < 0.99f)

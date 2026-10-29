@@ -32,6 +32,10 @@ namespace Enigma.Player
         private float _verticalVelocity;
         private bool _isCrouching;
         private float _targetHeight;
+        private float _footstepTimer;
+
+        public bool IsAirborne =>
+            _controller != null && (!_controller.isGrounded || _verticalVelocity > 0.35f);
 
         private void Awake()
         {
@@ -83,7 +87,24 @@ namespace Enigma.Player
 
             Vector3 velocity = move * speed + Vector3.up * _verticalVelocity;
             _controller.Move(velocity * Time.deltaTime);
-            // Un solo Move por frame 
+            TickFootstep(move.sqrMagnitude > 0.001f && _controller.isGrounded, speed);
+        }
+
+        private void TickFootstep(bool moving, float speed)
+        {
+            if (!moving)
+            {
+                _footstepTimer = 0f;
+                return;
+            }
+
+            float interval = Mathf.Clamp(0.55f * (walkSpeed / Mathf.Max(0.4f, speed)), 0.28f, 0.7f);
+            _footstepTimer += Time.deltaTime;
+            if (_footstepTimer < interval)
+                return;
+
+            _footstepTimer = 0f;
+            Enigma.Audio.SfxPlayer.Instance?.Play("footstep", transform.position);
         }
 
         private Vector3 GetCameraRelativeMove(Vector2 inputVec)
