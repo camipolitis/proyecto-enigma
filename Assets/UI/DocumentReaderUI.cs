@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace Enigma.UI
 {
-    // Lector de documentos. Q suelta la nota, guarda memoria la 1ra vez y dice "M..."
+    // Lector de documentos. Q suelta la nota y guarda memoria la 1ra vez.
     public class DocumentReaderUI : ModalUIBase
     {
         [SerializeField] private GameObject root;
@@ -21,6 +21,7 @@ namespace Enigma.UI
 
         private DocumentData _current;
         private InteractContext _context;
+        private bool _journalOnClose = true;
 
         protected override ModalKind Kind => ModalKind.Document;
         protected override GameObject ModalRoot => root;
@@ -44,6 +45,7 @@ namespace Enigma.UI
         {
             _current = document;
             _context = context;
+            _journalOnClose = true;
 
             bool hasImage = document != null && document.viewImage != null;
             if (viewImage != null)
@@ -66,11 +68,55 @@ namespace Enigma.UI
             }
 
             OpenModal();
+
+            if (document != null && document.openVoice != null && SubtitleSystem.Instance != null)
+                SubtitleSystem.Instance.PlayClip(document.openVoice);
         }
 
         public void OpenFromJournal(DocumentData document)
         {
             Open(document, null);
+        }
+
+        // Ver ítem del inventario: Q cierra, no gasta el objeto ni suma memoria.
+        public void Inspect(InventoryItem item)
+        {
+            if (item == null)
+                return;
+
+            if (item.inspectDoc != null)
+            {
+                _journalOnClose = false;
+                Open(item.inspectDoc, null);
+                _journalOnClose = false;
+                return;
+            }
+
+            OpenInspect(item.displayName, item.description);
+        }
+
+        public void OpenInspect(string title, string body)
+        {
+            _current = null;
+            _context = null;
+            _journalOnClose = false;
+
+            if (viewImage != null)
+                viewImage.gameObject.SetActive(false);
+
+            if (titleLabel != null)
+            {
+                titleLabel.gameObject.SetActive(true);
+                titleLabel.text = title ?? string.Empty;
+            }
+
+            if (bodyLabel != null)
+            {
+                bodyLabel.gameObject.SetActive(true);
+                bodyLabel.text = body ?? string.Empty;
+            }
+
+            OpenModal();
         }
 
         public override void Close()
@@ -82,7 +128,10 @@ namespace Enigma.UI
             var ctx = _context;
             base.Close();
 
-            if (closing != null)
+            if (SubtitleSystem.Instance != null)
+                SubtitleSystem.Instance.StopVoice();
+
+            if (_journalOnClose && closing != null)
             {
                 bool firstTime = LiveJournal != null && LiveJournal.TryAdd(closing);
                 if (firstTime)
@@ -96,6 +145,7 @@ namespace Enigma.UI
 
             _current = null;
             _context = null;
+            _journalOnClose = true;
         }
 
         private void PlayReleaseLine(InteractContext ctx, DocumentData doc)
@@ -111,8 +161,10 @@ namespace Enigma.UI
                 return;
             }
 
-            string line = string.IsNullOrEmpty(doc.releaseSubtitle) ? "M..." : doc.releaseSubtitle;
-            ctx.Subtitles.Show(line, 1.5f);
+            if (string.IsNullOrEmpty(doc.releaseSubtitle))
+                return;
+
+            ctx.Subtitles.Show(doc.releaseSubtitle, 1.5f);
         }
     }
 }

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa121de79b4a42f47bd59a4d01fbcb6d, type: 3}
+  m_Name: SO_Doc_ShiftLog
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
+  id: shift_log
+  title: PARTE DE GUARDIA
+  body: "SECTOR C \u2014 OBSERVACI\xD3N\n\nTurno irregular.\nLa hora est\xE1 circulada,
+    no el d\xEDa.\n\n        19:04\n\n- M."
+  releaseSubtitle: M...
+  releaseDialogueId: note_release
+  memoryCollectedMessage: Memoria recolectada
+  viewImage: {fileID: 0}
+  openVoice: {fileID: 0}

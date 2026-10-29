@@ -10,6 +10,9 @@ namespace Enigma.Core
         public static GameFlagSystem Instance { get; private set; }
         // Singleton de escena para que los interactables no necesiten FindObjectOfType.
 
+        static readonly List<string> CarryIds = new List<string>();
+        // Flags que cruzan un LoadScene (p. ej. hatch_unlocked → entrepiso).
+
         [SerializeField] private List<string> initialFalseFlags = new List<string>();
         // Lista editable en Inspector: flags que empiezan en false al cargar el nivel.
 
@@ -18,6 +21,19 @@ namespace Enigma.Core
 
         public event Action<string, bool> OnFlagChanged;
         // Evento para UI/luces/puertas reaccionan cuando cambia un flag.
+
+        public static void Carry(string flagId)
+        {
+            if (string.IsNullOrEmpty(flagId))
+                return;
+            if (!CarryIds.Contains(flagId))
+                CarryIds.Add(flagId);
+        }
+
+        public static void ClearCarry()
+        {
+            CarryIds.Clear();
+        }
 
         private void Awake()
         {
@@ -35,7 +51,14 @@ namespace Enigma.Core
                 if (!string.IsNullOrWhiteSpace(id))
                     _flags[id] = false;
             }
-       
+
+            foreach (var id in CarryIds)
+            {
+                if (!string.IsNullOrEmpty(id))
+                    _flags[id] = true;
+            }
+
+            CarryIds.Clear();
         }
 
         private void OnDestroy()
