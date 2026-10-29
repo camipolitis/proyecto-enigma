@@ -28,5 +28,8 @@ namespace Enigma.Data
 
         public AudioClip openVoice;
         // Clip al abrir (cassette). Vacío = solo texto.
+
+        public bool tensionOnRead;
+        // Notas ORIGEN: al abrir entra tensión; al cerrar con Q vuelve la base.
     }
 }

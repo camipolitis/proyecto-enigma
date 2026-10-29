@@ -1,3 +1,4 @@
+using Enigma.Audio;
 using Enigma.Data;
 using UnityEngine;
 
@@ -35,6 +36,8 @@ namespace Enigma.Interaction
 
             if (insertedVisual != null)
                 insertedVisual.SetActive(true);
+
+            SfxPlayer.Instance?.Play("item_place", transform.position);
         }
     }
 }

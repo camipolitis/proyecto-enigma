@@ -225,6 +225,7 @@ namespace Enigma.UI
             if (!already && !string.IsNullOrEmpty(printFlag))
             {
                 GameFlagSystem.Instance?.Set(printFlag, true);
+                Enigma.Audio.SfxPlayer.Instance?.Play("printer");
                 if (dialogue != null && dialogue.TryGet(printDialogueId, out var line))
                     subtitles?.Show(line.text, line.duration, line.voice);
             }

@@ -1,3 +1,4 @@
+using Enigma.Audio;
 using Enigma.Core;
 using Enigma.Data;
 using Enigma.Player;
@@ -94,6 +95,7 @@ namespace Enigma.UI
             Close();
             if (!string.IsNullOrEmpty(successFlagId))
                 GameFlagSystem.Instance?.Set(successFlagId, true);
+            SfxPlayer.Instance?.Play("wires");
 
             var subs = SubtitleSystem.Instance;
             if (dialogue != null && dialogue.TryGet(doneDialogueId, out var line))
