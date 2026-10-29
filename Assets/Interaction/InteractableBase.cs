@@ -92,9 +92,8 @@ namespace Enigma.Interaction
 
             if (config.requiredItem != null)
             {
-                if (context.SelectedItem == null || context.SelectedItem.id != config.requiredItem.id)
+                if (context.Inventory == null || !context.Inventory.Has(config.requiredItem))
                     return false;
-                // Hay que tener el ítem seleccionado en el hotbar.
             }
 
             return true;
@@ -107,6 +106,8 @@ namespace Enigma.Interaction
 
             PlayDialogue(context, config != null ? config.successDialogueId : null);
             HandleSuccessExtra(context);
+            if (config != null && config.requiredItem != null)
+                context.Inventory?.Remove(config.requiredItem);
             MarkCompleted();
         }
 

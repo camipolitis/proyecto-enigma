@@ -16,5 +16,8 @@ namespace Enigma.Data
 
         [TextArea] public string description;
         // Texto auxiliar... no es un documento de memoria
+
+        public DocumentData inspectDoc;
+        // Documento opcional al inspeccionar.
     }
 }

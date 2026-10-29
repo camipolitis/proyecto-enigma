@@ -22,6 +22,7 @@ namespace Enigma.UI
         [SerializeField] private string failSubtitle = "Código incorrecto...";
         [SerializeField] private DialogueLineSet dialogue;
         [SerializeField] private string failDialogueId;
+        [SerializeField] private string successDialogueId;
 
         private string _buffer = string.Empty;
         private Action _onSuccess;
@@ -141,9 +142,14 @@ namespace Enigma.UI
         {
             if (_buffer == correctCode)
             {
+                bool already = !string.IsNullOrEmpty(successFlagId) &&
+                               GameFlagSystem.Instance != null &&
+                               GameFlagSystem.Instance.Get(successFlagId);
                 Close(true);
                 if (!string.IsNullOrEmpty(successFlagId))
                     GameFlagSystem.Instance?.Set(successFlagId, true);
+                if (!already)
+                    PlaySuccessLine();
             }
             else
             {
@@ -165,7 +171,7 @@ namespace Enigma.UI
 
         private void PlayFailLine()
         {
-            var subs = FindFirstObjectByType<SubtitleSystem>();
+            var subs = SubtitleSystem.Instance;
             if (subs == null)
                 return;
 
@@ -177,6 +183,19 @@ namespace Enigma.UI
             }
 
             subs.Show(failSubtitle, 2f);
+        }
+
+        private void PlaySuccessLine()
+        {
+            if (string.IsNullOrEmpty(successDialogueId))
+                return;
+
+            var subs = SubtitleSystem.Instance;
+            if (subs == null)
+                return;
+
+            if (dialogue != null && dialogue.TryGet(successDialogueId, out var line))
+                subs.Show(line.text, line.duration, line.voice);
         }
     }
 }

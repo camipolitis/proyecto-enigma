@@ -10198,6 +10198,7 @@ MonoBehaviour:
   failSubtitle: "Cu\xE1l ser\xE1 el c\xF3digo?..."
   dialogue: {fileID: 11400000, guid: e2dbafb86c1b457f87967d4f6c909f5a, type: 2}
   failDialogueId: lock_fail
+  successDialogueId: lock_ok
 --- !u!114 &1196533430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17024,7 +17025,7 @@ MonoBehaviour:
       m_Calls: []
   screenFade: {fileID: 2013242209}
   sceneLoader: {fileID: 1798439262}
-  nextSceneName: 
+  nextSceneName: Level03_Archives
   endPanel: {fileID: 1841614821}
 --- !u!114 &1798439262
 MonoBehaviour:
