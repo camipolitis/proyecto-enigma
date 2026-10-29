@@ -71,6 +71,7 @@ namespace Enigma.Core
             Time.timeScale = 0f;
             ModalStack.Instance?.Push(ModalKind.Pause);
             MusicPlayer.Instance?.PlayPauseMusic();
+            AmbientDirector.Instance?.SetPaused(true);
 
             if (pausePanel != null)
                 pausePanel.SetActive(true);
@@ -93,6 +94,7 @@ namespace Enigma.Core
             journalUi?.CloseList();
 
             MusicPlayer.Instance?.RestoreSceneMusic();
+            AmbientDirector.Instance?.SetPaused(false);
             ModalStack.Instance?.ApplyCursorForTop();
         }
 
@@ -136,6 +138,8 @@ namespace Enigma.Core
 
         public void GoToMenu()
         {
+            IsPaused = false;
+            AmbientDirector.Instance?.SetPaused(false);
             if (sceneLoader != null)
                 sceneLoader.LoadSceneByName(menuSceneName);
         }

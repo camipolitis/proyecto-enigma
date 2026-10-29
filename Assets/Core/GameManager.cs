@@ -1,4 +1,5 @@
 using System.Collections;
+using Enigma.Audio;
 using Enigma.CameraSystem;
 using Enigma.Inventory;
 using Enigma.UI;
@@ -103,6 +104,7 @@ namespace Enigma.Core
         private IEnumerator CompleteRoutine()
         {
             Time.timeScale = 1f;
+            MusicPlayer.Instance?.PlayResolve();
 
             if (screenFade != null)
                 yield return screenFade.FadeOutRoutine();

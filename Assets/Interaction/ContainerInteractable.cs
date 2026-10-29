@@ -1,3 +1,4 @@
+using Enigma.Audio;
 using Enigma.Data;
 using UnityEngine;
 
@@ -30,6 +31,7 @@ namespace Enigma.Interaction
         protected override void HandleSuccessExtra(InteractContext context)
         {
             opened = true;
+            SfxPlayer.Instance?.Play("drawer_open", transform.position);
 
             if (animatedPart != null)
             {

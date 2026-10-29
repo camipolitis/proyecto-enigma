@@ -89,6 +89,7 @@ namespace Enigma.Interaction
         protected override void HandleSuccessExtra(InteractContext context)
         {
             _opened = true;
+            Enigma.Audio.SfxPlayer.Instance?.Play("door_open", transform.position);
             MarkCompleted();
             if (doorPivot != null)
                 StartCoroutine(OpenDoor());
