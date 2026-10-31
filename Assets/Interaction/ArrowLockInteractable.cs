@@ -2,6 +2,7 @@ using System.Collections;
 using Enigma.Audio;
 using Enigma.Core;
 using Enigma.Data;
+using Enigma.Environment;
 using Enigma.UI;
 using UnityEngine;
 
@@ -71,6 +72,7 @@ namespace Enigma.Interaction
                 subs.Show(line.text, line.duration, line.voice);
             if (hatchPivot != null)
             {
+                BurstParticles.Spawn(BurstParticles.Kind.Dust, hatchPivot.position);
                 SfxPlayer.Instance?.Play("hatch", hatchPivot.position);
                 StartCoroutine(OpenHatch());
             }
@@ -85,15 +87,7 @@ namespace Enigma.Interaction
 
         private IEnumerator OpenHatch()
         {
-            Quaternion start = hatchPivot.localRotation;
-            Quaternion end = Quaternion.Euler(openPitch, 0f, 0f);
-            float t = 0f;
-            while (t < 1f)
-            {
-                t += Time.deltaTime / openDuration;
-                hatchPivot.localRotation = Quaternion.Slerp(start, end, t);
-                yield return null;
-            }
+            yield return PropAnimator.Play(hatchPivot, Quaternion.Euler(openPitch, 0f, 0f), openDuration);
         }
     }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Enigma.UI
 {
@@ -12,6 +13,15 @@ namespace Enigma.UI
 
         private void Awake()
         {
+            var img = GetComponent<Image>();
+            if (img == null)
+                img = GetComponentInChildren<Image>(true);
+            if (img != null)
+            {
+                img.color = Color.black;
+                img.enabled = true;
+            }
+
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 0f;
@@ -31,26 +41,27 @@ namespace Enigma.UI
             StartCoroutine(FadeTo(0f));
         }
 
-        public System.Collections.IEnumerator FadeOutRoutine()
+        public System.Collections.IEnumerator FadeOutRoutine(float duration = -1f)
         {
-            yield return FadeTo(1f);
+            yield return FadeTo(1f, duration);
         }
 
-        private System.Collections.IEnumerator FadeTo(float target)
+        private System.Collections.IEnumerator FadeTo(float target, float duration = -1f)
         {
             if (canvasGroup == null)
                 yield break;
 
+            float dur = duration > 0.01f ? duration : fadeDuration;
             canvasGroup.blocksRaycasts = target > 0.5f;
-            float start = canvasGroup.alpha;
+            canvasGroup.alpha = target;
+            if (target < 0.5f)
+                yield break;
             float t = 0f;
-            while (t < 1f)
+            while (t < dur)
             {
-                t += Time.unscaledDeltaTime / Mathf.Max(0.01f, fadeDuration);
-                canvasGroup.alpha = Mathf.Lerp(start, target, t);
+                t += Time.unscaledDeltaTime;
                 yield return null;
             }
-            canvasGroup.alpha = target;
         }
     }
 }

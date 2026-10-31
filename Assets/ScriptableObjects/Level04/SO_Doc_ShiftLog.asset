@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: shift_log
   title: PARTE DE GUARDIA
-  body: "SECTOR C \u2014 OBSERVACI\xD3N\n\nTurno irregular.\nLa hora est\xE1 circulada,
-    no el d\xEDa.\n\n        19:04\n\n- M."
+  body: "SECTOR C — OBSERVACIÓN\nFecha: 13/12/78\n\nTurno irregular. Luces del pasillo a medio régimen.\n\n        ((19:04))\n\nNadie más firmó. Dejar el locker como está.\n\n- M."
   releaseSubtitle: M...
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: a97ea15c4e5f70b1ae04e1275a93f516, type: 3}
   openVoice: {fileID: 0}
+  tensionOnRead: 1

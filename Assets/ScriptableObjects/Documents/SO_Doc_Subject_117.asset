@@ -13,10 +13,12 @@ MonoBehaviour:
   m_Name: SO_Doc_Subject_117
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: subject_117
-  title: EXPEDIENTE SUJETO 117
-  body: "EXPEDIENTE 117\nEstado: en observaci\xF3n.\nPide agua. No recuerda por qu\xE9.\n\n                                        [ E ]"
+  title: EXPEDIENTE 117
+  body: "EXPEDIENTE N\xBA 117\nEstado: en observaci\xF3n\n\nPide agua. No recuerda
+    por qu\xE9.\nNo responde al nombre de ingreso. Come si se lo indican.\nEl resto
+    del d\xEDa, quieto. Sin registro de visita.\n\n                                        <size=28>[ E ]</size>"
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: e5f0c3d860719241e0c6f3a9d2b51738, type: 3}
   openVoice: {fileID: 0}

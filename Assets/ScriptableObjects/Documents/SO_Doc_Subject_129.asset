@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: SO_Doc_Subject_129
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: subject_129
-  title: EXPEDIENTE SUJETO 129
-  body: "EXPEDIENTE 129\nEstado: inestable.\nObservaci\xF3n breve. No responde al nombre.\n\n                                        [ L ]"
+  title: EXPEDIENTE 129
+  body: "EXPEDIENTE Nº 129\nEstado: inestable\nObservación breve. No responde al nombre.\n\nInforme médico: ausente.\n                              <i><color=#7a1712>dejarla.</color></i>\nNo transferir. No ORIGEN.\n\n                                        <size=28>[ L ]</size>"
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: f6a1d4e97182a352f1d704bae3c62849, type: 3}
   openVoice: {fileID: 0}
+  tensionOnRead: 1

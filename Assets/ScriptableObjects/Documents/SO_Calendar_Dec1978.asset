@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: calendar_dec1978
   title: CALENDARIO - DICIEMBRE 1978
-  body: "Mes: Diciembre 1978\n\nEl d\xEDa 13 est\xE1 marcado con un c\xEDrculo.\n\n13
-    / 12 / 78"
+  body: "DICIEMBRE 1978\nSector C"
   releaseSubtitle: Trece de diciembre del 78...
   releaseDialogueId: calendar_hint
   memoryCollectedMessage: Memoria recolectada

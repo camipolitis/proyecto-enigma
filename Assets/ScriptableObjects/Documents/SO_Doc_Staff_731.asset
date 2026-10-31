@@ -14,9 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: staff_731
   title: FICHA DE PERSONAL
-  body: "FICHA DE PERSONAL\nID: 731\n\xC1rea: vigilancia\nEstado: activo"
+  body: "INSTITUTO NACIONAL \u2014 PERSONAL\n\nN\xBA 731\nApellido y nombre: ........................\nSector:
+    Vigilancia\nTurno: Rotativo\nEstado: Activo\n\nRonda: pasillos 2 y 3\nC\xE1maras
+    sector C: informar falla / no reparar\nNo dialogar con sujetos.\n\nSello de control:
+    vigente          12/78"
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: c9d407b2a4b5d685c40a37edb6f95b7c, type: 3}
   openVoice: {fileID: 0}

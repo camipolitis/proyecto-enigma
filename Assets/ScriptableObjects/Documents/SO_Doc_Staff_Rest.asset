@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: SO_Doc_Staff_Rest
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: staff_rest
-  title: PERSONAL
-  body: "Dos fichas intactas. El resto, humo.\nLo que queda no est\xE1 ac\xE1."
+  title: "PERSONAL \u2014 RESTOS"
+  body: "NÓMINA — COPIA DE ARCHIVO\n\n204  —  archivo / noche\n731  —  vigilancia / rotativo\n\n███  —  ........\n███  —  ........\n\nLegajo incompleto. Fotos: retiradas."
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: f2073ae5d7e809b8f73d6ab0e92c8eaf, type: 3}
   openVoice: {fileID: 0}

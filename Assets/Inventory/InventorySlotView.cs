@@ -39,8 +39,7 @@ namespace Enigma.Inventory
 
             if (legacyLabel != null)
             {
-                string n = (slotIndex + 1).ToString();
-                legacyLabel.text = item != null ? n + "  " + item.displayName : n;
+                legacyLabel.text = (slotIndex + 1).ToString();
                 legacyLabel.fontStyle = selected ? FontStyle.Bold : FontStyle.Normal;
                 legacyLabel.fontSize = selected ? 16 : 12;
                 legacyLabel.color = selected ? Color.white : new Color(0.7f, 0.7f, 0.7f, 1f);

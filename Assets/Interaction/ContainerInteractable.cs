@@ -55,6 +55,13 @@ namespace Enigma.Interaction
             if (box != null)
                 box.enabled = false;
 
+            if (name.IndexOf("Painting") >= 0)
+            {
+                var mesh = GetComponent<MeshRenderer>();
+                if (mesh != null)
+                    mesh.enabled = false;
+            }
+
             if (autoAddItem != null && context.Inventory != null && context.Inventory.CanAdd(autoAddItem))
             {
                 context.Inventory.Add(autoAddItem);

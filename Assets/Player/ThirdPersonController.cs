@@ -12,8 +12,8 @@ namespace Enigma.Player
         // Cámara independiente: se asigna el transform del CameraRig
 
         [Header("Speeds")]
-        [SerializeField] private float walkSpeed = 2.2f;
-        [SerializeField] private float runSpeed = 4.5f;
+        [SerializeField] private float walkSpeed = 2.1f;
+        [SerializeField] private float runSpeed = 4.2f;
         [SerializeField] private float crouchSpeed = 1.2f;
         // Velocidades en Inspector 
 
@@ -37,11 +37,17 @@ namespace Enigma.Player
         public bool IsAirborne =>
             _controller != null && (!_controller.isGrounded || _verticalVelocity > 0.35f);
 
+        public bool IsCrouching => _isCrouching;
+
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
             _targetHeight = standHeight;
             ApplyHeightImmediate(standHeight);
+            if (Mathf.Abs(walkSpeed - 2.2f) < 0.01f)
+                walkSpeed = 2.1f;
+            if (Mathf.Abs(runSpeed - 4.5f) < 0.01f)
+                runSpeed = 4.2f;
         }
 
         private void Update()
@@ -160,11 +166,9 @@ namespace Enigma.Player
 
         public void SetProneVisual(bool prone)
         {
-            _isCrouching = prone;
-            _targetHeight = prone ? crouchHeight * 0.7f : standHeight;
-            if (prone)
-                ApplyHeightImmediate(_targetHeight);
-            // Altura baja procedural hasta que tengamos la animación
+            _isCrouching = false;
+            _targetHeight = standHeight;
+            _verticalVelocity = -2f;
         }
     }
 }

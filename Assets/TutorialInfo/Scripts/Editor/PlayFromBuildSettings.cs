@@ -19,6 +19,13 @@ static class PlayFromBuildSettings
 
     static void ApplyFirstBuildScene()
     {
+        // En batchmode (tests por línea de comandos) el runner necesita su propia escena inicial
+        if (UnityEngine.Application.isBatchMode)
+        {
+            EditorSceneManager.playModeStartScene = null;
+            return;
+        }
+
         var scenes = EditorBuildSettings.scenes;
         if (scenes == null)
             return;

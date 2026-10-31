@@ -13,10 +13,12 @@ MonoBehaviour:
   m_Name: SO_Doc_Subject_084
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: subject_084
-  title: EXPEDIENTE SUJETO 084
-  body: "EXPEDIENTE 084\nEstado: cerrado.\nRespuesta irregular a la luz.\n\n                                        [ V ]"
+  title: EXPEDIENTE 084
+  body: "EXPEDIENTE N\xBA 084\nEstado: cerrado\nIngreso: traslado interno\nFicha m\xE9dica:
+    no adjunta\n\nRespuesta irregular a la luz. No persigue la fuente;\nse queda.\nObservaci\xF3n
+    breve. Alta denegada.\n\n                                        <size=28>[ V ]</size>"
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: d4e9b2c75f608130d9b5e2f8c1a40627, type: 3}
   openVoice: {fileID: 0}

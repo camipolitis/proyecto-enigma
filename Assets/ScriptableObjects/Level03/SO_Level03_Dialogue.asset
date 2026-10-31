@@ -46,7 +46,7 @@ MonoBehaviour:
     duration: 2.5
     voice: {fileID: 0}
   - id: hatch_open
-    text: "Ah\xED arriba..."
+    text: "Ah\xED abajo..."
     duration: 2.5
     voice: {fileID: 0}
   - id: magnet_move

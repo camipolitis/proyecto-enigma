@@ -24,7 +24,7 @@ namespace Enigma.Data
         // Toast la primera vez que se guarda en el journal.
 
         public Texture2D viewImage;
-        // Si hay imagen, el lector la muestra en vez del body.
+        // Ilustración al lado del texto. El body se muestra igual.
 
         public AudioClip openVoice;
         // Clip al abrir (cassette). Vacío = solo texto.

@@ -14,9 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: cassette_leak
   title: CASSETTE
-  body: "Tenemos los medios para llegar a ORIGEN.\nQuien interfiera sabe a lo que se enfrenta.\nA partir de este d\xEDa\u2026"
+  body: "<i>Wir verf\xFCgen \xFCber die Mittel, ORIGEN zu erreichen.\nWer sich einmischt,
+    wei\xDF, womit er zu rechnen hat.\nVon diesem Tag an\u2026</i>\n\nTenemos los medios
+    para llegar a ORIGEN.\nQuien interfiera sabe a lo que se enfrenta.\nA partir de
+    este d\xEDa\u2026"
   releaseSubtitle: 
   releaseDialogueId: 
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: f86d904b3d4e6faefd93d0164f82e405, type: 3}
   openVoice: {fileID: 0}

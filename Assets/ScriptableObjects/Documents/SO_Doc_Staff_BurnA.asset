@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: SO_Doc_Staff_BurnA
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: staff_burn_a
-  title: RESTO QUEMADO
-  body: "[ILEGIBLE \u2014 QUEMADO]\n\nSolo se lee un sello de personal.\nEl resto est\xE1 negro."
+  title: "FICHA DE PERSONAL"
+  body: "INST█TUTO — FICHA DE PERS█NAL\nNº  ███\nSector: ████ivo\nEstado: ██\n\n<color=#8a1c16>[ PERSONAL ]</color>\n████████████\n███  no retirar  ███"
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: d0e518c3b5c6e796d51b48fec70a6c8d, type: 3}
   openVoice: {fileID: 0}

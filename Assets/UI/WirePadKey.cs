@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Enigma.UI
 {
-    // Extremo de un cable: izquierda (color fijo) o derecha (barajado).
+    // Extremo: izquierda cable gris, derecha terminal de color.
     public class WirePadKey : MonoBehaviour
     {
         [SerializeField] private WirePuzzleUI target;
