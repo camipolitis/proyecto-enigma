@@ -1,3 +1,4 @@
+using Enigma.Audio;
 using Enigma.Data;
 using UnityEngine;
 
@@ -9,6 +10,12 @@ namespace Enigma.Interaction
         [SerializeField] private InventoryItem item;
         [SerializeField] private bool disableOnPickup = true;
 
+        private void Start()
+        {
+            if (item != null)
+                ItemVisuals.Dress(gameObject, item.id);
+        }
+
         protected override bool MeetsSuccessConditions(InteractContext context)
         {
             return item != null && context.Inventory != null && context.Inventory.CanAdd(item);
@@ -17,6 +24,7 @@ namespace Enigma.Interaction
         protected override void HandleSuccessExtra(InteractContext context)
         {
             context.Inventory.Add(item);
+            SfxPlayer.Instance?.Play("item_pickup");
             if (disableOnPickup)
                 gameObject.SetActive(false);
         }

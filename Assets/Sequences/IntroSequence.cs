@@ -1,4 +1,5 @@
 using System.Collections;
+using Enigma.Cinematics;
 using Enigma.Data;
 using Enigma.Player;
 using Enigma.UI;
@@ -30,6 +31,7 @@ namespace Enigma.Sequences
             input?.SetGameplayInputEnabled(false);
             state?.SetState(PlayerGameplayState.Prone);
             controller?.SetProneVisual(true);
+            yield return CinematicDirector.PlayIntro(controller != null ? controller.transform : null);
 
             if (standPromptRoot != null)
                 standPromptRoot.SetActive(false);
@@ -60,6 +62,27 @@ namespace Enigma.Sequences
 
             if (standPromptRoot != null)
                 standPromptRoot.SetActive(false);
+
+            // StandingUp entero con input apagado. Recién Exploring al terminar.
+            state?.SetState(PlayerGameplayState.Standing);
+            var mix = controller != null
+                ? controller.GetComponent<MixamoPlayerVisual>()
+                : null;
+            float wait = 0f;
+            while (mix != null && !mix.IsGettingUp && wait < 0.45f)
+            {
+                wait += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            float t = 0f;
+            float max = mix != null ? mix.GetUpLength + 0.35f : 2.2f;
+            while (t < max)
+            {
+                if (mix != null && !mix.IsGettingUp && t > 0.2f)
+                    break;
+                t += Time.unscaledDeltaTime;
+                yield return null;
+            }
 
             controller?.SetProneVisual(false);
             state?.SetState(PlayerGameplayState.Exploring);

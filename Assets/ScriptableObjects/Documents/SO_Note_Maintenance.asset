@@ -21,3 +21,4 @@ MonoBehaviour:
   releaseSubtitle: M...
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
+  viewImage: {fileID: 2800000, guid: a8c1e04f6b2d4913a7e5c0d8f1b36427, type: 3}

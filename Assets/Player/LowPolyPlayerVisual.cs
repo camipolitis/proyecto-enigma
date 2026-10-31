@@ -44,6 +44,8 @@ namespace Enigma.Player
 
         private void LateUpdate()
         {
+            if (FindChild("MixamoRoot") != null)
+                return;
             if (root == null)
                 return;
 
@@ -126,8 +128,28 @@ namespace Enigma.Player
 
         public void SetVisible(bool visible)
         {
+            var mix = FindChild("MixamoRoot");
+            if (mix != null)
+            {
+                mix.gameObject.SetActive(visible);
+                if (root != null)
+                    root.gameObject.SetActive(false);
+                return;
+            }
             if (root != null)
                 root.gameObject.SetActive(visible);
+        }
+
+        // Find no ve hijos inactivos; GetChild sí.
+        private Transform FindChild(string childName)
+        {
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var c = transform.GetChild(i);
+                if (c.name == childName)
+                    return c;
+            }
+            return null;
         }
 
         private void EnsureHair()

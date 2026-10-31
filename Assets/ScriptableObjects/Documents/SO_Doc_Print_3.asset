@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: SO_Doc_Print_3
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: print_3
-  title: HOJA
-  body: "3"
+  title: 
+  body: 3
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: e75c8f3a2c3d5efdec82cf053e71d3f4, type: 3}
   openVoice: {fileID: 0}

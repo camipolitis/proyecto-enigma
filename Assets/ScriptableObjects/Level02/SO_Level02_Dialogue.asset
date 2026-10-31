@@ -65,3 +65,7 @@ MonoBehaviour:
     text: 'firma: M...'
     duration: 2
     voice: {fileID: 8300000, guid: e229c07d635ad894fa0ab9c709f1d3b4, type: 3}
+  - id: watcher_alert
+    text: "Me est\xE1 mirando..."
+    duration: 2.5
+    voice: {fileID: 0}

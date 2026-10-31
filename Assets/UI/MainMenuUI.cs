@@ -21,12 +21,14 @@ namespace Enigma.UI
 
         public void Play()
         {
+            Enigma.Audio.SfxPlayer.Instance?.Play("ui_click");
             if (sceneLoader != null)
                 sceneLoader.LoadSceneByName(playSceneName);
         }
 
         public void ShowHowTo()
         {
+            Enigma.Audio.SfxPlayer.Instance?.Play("ui_click");
             if (howToPanel != null)
                 howToPanel.SetActive(true);
             if (creditsPanel != null)
@@ -35,6 +37,7 @@ namespace Enigma.UI
 
         public void ShowCredits()
         {
+            Enigma.Audio.SfxPlayer.Instance?.Play("ui_click");
             if (creditsPanel != null)
                 creditsPanel.SetActive(true);
             if (howToPanel != null)

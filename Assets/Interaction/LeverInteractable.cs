@@ -1,4 +1,5 @@
 using System.Collections;
+using Enigma.Environment;
 using UnityEngine;
 
 namespace Enigma.Interaction
@@ -25,8 +26,11 @@ namespace Enigma.Interaction
         protected override void HandleSuccessExtra(InteractContext context)
         {
             _activated = true;
+            Enigma.Audio.SfxPlayer.Instance?.Play("lever", transform.position);
             PlayAngle(successAngle);
             SpawnSpark();
+            Vector3 steamPos = leverPivot != null ? leverPivot.position : transform.position;
+            BurstParticles.Spawn(BurstParticles.Kind.Steam, steamPos);
         }
 
         protected override void HandleFailExtra(InteractContext context)
@@ -36,11 +40,10 @@ namespace Enigma.Interaction
 
         private void SpawnSpark()
         {
-            if (sparkPrefab == null)
-                return;
-
             Vector3 pos = leverPivot != null ? leverPivot.position : transform.position;
-            Instantiate(sparkPrefab, pos, Quaternion.identity);
+            BurstParticles.Spawn(BurstParticles.Kind.Spark, pos);
+            if (sparkPrefab != null)
+                Instantiate(sparkPrefab, pos, Quaternion.identity);
         }
 
         private void PlayAngle(float angle, bool returnBack = false)
@@ -57,24 +60,9 @@ namespace Enigma.Interaction
         {
             Quaternion start = leverPivot.localRotation;
             Quaternion target = Quaternion.Euler(targetAngle, 0f, 0f);
-            float t = 0f;
-            while (t < 1f)
-            {
-                t += Time.deltaTime / animDuration;
-                leverPivot.localRotation = Quaternion.Slerp(start, target, t);
-                yield return null;
-            }
-
+            yield return PropAnimator.Play(leverPivot, target, animDuration);
             if (returnBack)
-            {
-                t = 0f;
-                while (t < 1f)
-                {
-                    t += Time.deltaTime / animDuration;
-                    leverPivot.localRotation = Quaternion.Slerp(target, start, t);
-                    yield return null;
-                }
-            }
+                yield return PropAnimator.Play(leverPivot, start, animDuration);
         }
     }
 }

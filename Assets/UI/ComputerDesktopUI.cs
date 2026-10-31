@@ -133,6 +133,7 @@ namespace Enigma.UI
             if (root == null)
                 return;
 
+            ApplyZenDots(root);
             BindFolderRefs();
 
             if (GameFlagSystem.Instance != null && GameFlagSystem.Instance.Get(adminFlagId))
@@ -203,7 +204,7 @@ namespace Enigma.UI
             if (root != null)
                 root.SetActive(false);
 
-            readerUi.Open(doc, null);
+            readerUi.Open(doc, null, true);
         }
 
         public void OpenOrigenDoc() => OpenWorkDoc(origenDoc, sheetOrigen, printFlagOrigen);
@@ -225,6 +226,7 @@ namespace Enigma.UI
             if (!already && !string.IsNullOrEmpty(printFlag))
             {
                 GameFlagSystem.Instance?.Set(printFlag, true);
+                Enigma.Audio.SfxPlayer.Instance?.Play("printer");
                 if (dialogue != null && dialogue.TryGet(printDialogueId, out var line))
                     subtitles?.Show(line.text, line.duration, line.voice);
             }
@@ -288,6 +290,23 @@ namespace Enigma.UI
                 GameFlagSystem.Instance.Get(printFlagStaff);
 
             _restoreFolder.gameObject.SetActive(!admin && printed);
+        }
+
+        private static void ApplyZenDots(GameObject host)
+        {
+            if (host == null)
+                return;
+            var font = Resources.Load<Font>("Fonts/ZenDots-Regular");
+            if (font == null)
+                return;
+            var labels = host.GetComponentsInChildren<Text>(true);
+            for (int i = 0; i < labels.Length; i++)
+            {
+                if (labels[i] == null)
+                    continue;
+                labels[i].font = font;
+                labels[i].color = new Color(0.55f, 1f, 0.62f, 1f);
+            }
         }
 
         private void ConsumePrintSheets()

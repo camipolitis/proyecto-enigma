@@ -1,4 +1,5 @@
 using System.Collections;
+using Enigma.Audio;
 using Enigma.CameraSystem;
 using Enigma.Inventory;
 using Enigma.UI;
@@ -20,7 +21,11 @@ namespace Enigma.Core
         [SerializeField] private GameObject endPanel;
         // Si nextSceneName está vacío, muestra endPanel (Continuará).
 
+        [SerializeField] private float completeFadeDuration = 3.2f;
+        // Más largo que el fade de hatch para que entre el sting.
+
         private bool _levelCompleted;
+        private float _exitArmedAt = -1f;
 
         public bool IsLevelCompleted => _levelCompleted;
 
@@ -39,15 +44,15 @@ namespace Enigma.Core
         private void OnEnable()
         {
             if (GameFlagSystem.Instance != null)
-                GameFlagSystem.Instance.OnFlagChanged += HandleFlagChanged;
+                GameFlagSystem.Instance.OnFlagChanged += OnFlag;
         }
 
         private void Start()
         {
             if (GameFlagSystem.Instance != null)
             {
-                GameFlagSystem.Instance.OnFlagChanged -= HandleFlagChanged;
-                GameFlagSystem.Instance.OnFlagChanged += HandleFlagChanged;
+                GameFlagSystem.Instance.OnFlagChanged -= OnFlag;
+                GameFlagSystem.Instance.OnFlagChanged += OnFlag;
             }
 
             Time.timeScale = 1f;
@@ -64,7 +69,14 @@ namespace Enigma.Core
         private void OnDisable()
         {
             if (GameFlagSystem.Instance != null)
-                GameFlagSystem.Instance.OnFlagChanged -= HandleFlagChanged;
+                GameFlagSystem.Instance.OnFlagChanged -= OnFlag;
+        }
+
+        private void OnFlag(string flagId, bool value)
+        {
+            if (!value || flagId != levelCompleteFlag)
+                return;
+            _exitArmedAt = Time.unscaledTime + 0.9f;
         }
 
         private void OnDestroy()
@@ -73,13 +85,17 @@ namespace Enigma.Core
                 Instance = null;
         }
 
-        private void HandleFlagChanged(string flagId, bool value)
+        public void TryCompleteFromExit()
         {
-            if (_levelCompleted || !value)
+            if (_levelCompleted)
                 return;
-
-            if (flagId == levelCompleteFlag)
-                CompleteLevel();
+            if (GameFlagSystem.Instance == null || string.IsNullOrEmpty(levelCompleteFlag))
+                return;
+            if (!GameFlagSystem.Instance.Get(levelCompleteFlag))
+                return;
+            if (_exitArmedAt > 0f && Time.unscaledTime < _exitArmedAt)
+                return;
+            CompleteLevel();
         }
 
         public void CompleteLevel()
@@ -95,6 +111,10 @@ namespace Enigma.Core
             InteractionZoomController.Instance?.ExitZoom();
             ModalStack.Instance?.ClearAll();
             Time.timeScale = 1f;
+            var playerState = FindFirstObjectByType<Enigma.Player.PlayerStateController>();
+            if (playerState != null)
+                playerState.SetState(Enigma.Player.PlayerGameplayState.Locked);
+            // Durante el fade el jugador no camina más allá del umbral
 
             onLevelComplete?.Invoke();
             StartCoroutine(CompleteRoutine());
@@ -103,9 +123,9 @@ namespace Enigma.Core
         private IEnumerator CompleteRoutine()
         {
             Time.timeScale = 1f;
-
+            MusicPlayer.Instance?.PlayResolve();
             if (screenFade != null)
-                yield return screenFade.FadeOutRoutine();
+                yield return screenFade.FadeOutRoutine(completeFadeDuration);
             else
                 yield return null;
 

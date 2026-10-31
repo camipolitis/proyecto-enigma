@@ -18,5 +18,6 @@ MonoBehaviour:
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: c3d8a1b64e5f7029c8a4d1e7b0f39516, type: 3}
   openVoice: {fileID: 0}
+  tensionOnRead: 1

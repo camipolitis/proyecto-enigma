@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: SO_Doc_Subject_206
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: subject_206
-  title: EXPEDIENTE SUJETO 206
-  body: "EXPEDIENTE 206\nEstado: transferido.\nEl informe m\xE9dico falta.\n\n                                        [ A ]"
+  title: EXPEDIENTE 206
+  body: "EXPEDIENTE Nº 206\nEstado: transferido\nInforme médico: falta\n\nFecha de egreso: ██/██/78\nDestino: OR██E█\nSin ficha de acompañante.\n\n                                        <size=28>[ A ]</size>"
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: a7b2e5f08293b463a2e815cbf4d7395a, type: 3}
   openVoice: {fileID: 0}

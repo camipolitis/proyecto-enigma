@@ -1,3 +1,4 @@
+using Enigma.Audio;
 using Enigma.Data;
 using UnityEngine;
 
@@ -30,6 +31,7 @@ namespace Enigma.Interaction
         protected override void HandleSuccessExtra(InteractContext context)
         {
             opened = true;
+            SfxPlayer.Instance?.Play("drawer_open", transform.position);
 
             if (animatedPart != null)
             {
@@ -52,6 +54,13 @@ namespace Enigma.Interaction
             var box = GetComponent<Collider>();
             if (box != null)
                 box.enabled = false;
+
+            if (name.IndexOf("Painting") >= 0)
+            {
+                var mesh = GetComponent<MeshRenderer>();
+                if (mesh != null)
+                    mesh.enabled = false;
+            }
 
             if (autoAddItem != null && context.Inventory != null && context.Inventory.CanAdd(autoAddItem))
             {

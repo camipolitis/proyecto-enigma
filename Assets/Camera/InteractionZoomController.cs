@@ -111,8 +111,9 @@ namespace Enigma.CameraSystem
             SetPlayerVisible(true);
             thirdPersonCamera?.CaptureCurrentAngles();
             thirdPersonCamera?.SetOrbitEnabled(true);
-            playerState?.SetState(PlayerGameplayState.Exploring);
-            // Vuelve el control normal de tercera persona.
+            if (Enigma.Core.GameManager.Instance == null || !Enigma.Core.GameManager.Instance.IsLevelCompleted)
+                playerState?.SetState(PlayerGameplayState.Exploring);
+            // Vuelve el control normal de tercera persona (salvo durante el fade de fin de nivel).
         }
     }
 }

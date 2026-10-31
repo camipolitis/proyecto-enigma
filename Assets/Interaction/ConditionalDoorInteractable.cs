@@ -1,4 +1,5 @@
 using System.Collections;
+using Enigma.Environment;
 using UnityEngine;
 
 namespace Enigma.Interaction
@@ -8,6 +9,7 @@ namespace Enigma.Interaction
     {
         [SerializeField] private Transform doorPivot;
         [SerializeField] private float openYaw = 90f;
+        [SerializeField] private float slideX = 1.8f;
         [SerializeField] private float openDuration = 0.8f;
         [SerializeField] private GameObject powerLight;
         // Luz verde opcional cuando hay energía / fusible.
@@ -89,6 +91,7 @@ namespace Enigma.Interaction
         protected override void HandleSuccessExtra(InteractContext context)
         {
             _opened = true;
+            Enigma.Audio.SfxPlayer.Instance?.Play("door_open", transform.position);
             MarkCompleted();
             if (doorPivot != null)
                 StartCoroutine(OpenDoor());
@@ -96,15 +99,15 @@ namespace Enigma.Interaction
 
         private IEnumerator OpenDoor()
         {
-            Quaternion start = doorPivot.localRotation;
-            Quaternion end = Quaternion.Euler(0f, openYaw, 0f);
-            float t = 0f;
-            while (t < 1f)
+            // ORIGEN corre sobre X; el resto gira.
+            if (gameObject.name == "Interactable_OrigenDoor")
             {
-                t += Time.deltaTime / openDuration;
-                doorPivot.localRotation = Quaternion.Slerp(start, end, t);
-                yield return null;
+                Vector3 end = doorPivot.localPosition + new Vector3(slideX, 0f, 0f);
+                yield return PropAnimator.PlaySlide(doorPivot, end, openDuration);
+                yield break;
             }
+
+            yield return PropAnimator.Play(doorPivot, Quaternion.Euler(0f, openYaw, 0f), openDuration);
         }
     }
 }

@@ -24,8 +24,9 @@ namespace Enigma.Core
             _firstSceneHandled = true;
 
             var scene = SceneManager.GetActiveScene();
-            if (scene.name == "MainMenu")
+            if (scene.name == "MainMenu" || scene.name.StartsWith("InitTestScene"))
                 return;
+            // La escena del Test Runner debe seguir viva para que corran los tests
 
             SceneManager.LoadScene("MainMenu");
         }

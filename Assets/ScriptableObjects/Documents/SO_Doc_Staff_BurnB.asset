@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: SO_Doc_Staff_BurnB
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: staff_burn_b
-  title: HOJA CARBONIZADA
-  body: "[QUEMADO]\n\nUn n\xFAmero asoma y se pierde.\nNo hay firma."
+  title: "████ — PERSONAL"
+  body: "INSTITUTO — ███\n\n        ██ 9 ██\n\nFirma: —\n█████████"
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: e1f629d4c6d7f8a7e62c59afd81b7d9e, type: 3}
   openVoice: {fileID: 0}

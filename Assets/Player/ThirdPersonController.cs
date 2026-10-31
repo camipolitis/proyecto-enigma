@@ -12,8 +12,8 @@ namespace Enigma.Player
         // Cámara independiente: se asigna el transform del CameraRig
 
         [Header("Speeds")]
-        [SerializeField] private float walkSpeed = 2.2f;
-        [SerializeField] private float runSpeed = 4.5f;
+        [SerializeField] private float walkSpeed = 2.1f;
+        [SerializeField] private float runSpeed = 4.2f;
         [SerializeField] private float crouchSpeed = 1.2f;
         // Velocidades en Inspector 
 
@@ -32,12 +32,22 @@ namespace Enigma.Player
         private float _verticalVelocity;
         private bool _isCrouching;
         private float _targetHeight;
+        private float _footstepTimer;
+
+        public bool IsAirborne =>
+            _controller != null && (!_controller.isGrounded || _verticalVelocity > 0.35f);
+
+        public bool IsCrouching => _isCrouching;
 
         private void Awake()
         {
             _controller = GetComponent<CharacterController>();
             _targetHeight = standHeight;
             ApplyHeightImmediate(standHeight);
+            if (Mathf.Abs(walkSpeed - 2.2f) < 0.01f)
+                walkSpeed = 2.1f;
+            if (Mathf.Abs(runSpeed - 4.5f) < 0.01f)
+                runSpeed = 4.2f;
         }
 
         private void Update()
@@ -83,7 +93,24 @@ namespace Enigma.Player
 
             Vector3 velocity = move * speed + Vector3.up * _verticalVelocity;
             _controller.Move(velocity * Time.deltaTime);
-            // Un solo Move por frame 
+            TickFootstep(move.sqrMagnitude > 0.001f && _controller.isGrounded, speed);
+        }
+
+        private void TickFootstep(bool moving, float speed)
+        {
+            if (!moving)
+            {
+                _footstepTimer = 0f;
+                return;
+            }
+
+            float interval = Mathf.Clamp(0.55f * (walkSpeed / Mathf.Max(0.4f, speed)), 0.28f, 0.7f);
+            _footstepTimer += Time.deltaTime;
+            if (_footstepTimer < interval)
+                return;
+
+            _footstepTimer = 0f;
+            Enigma.Audio.SfxPlayer.Instance?.Play("footstep", transform.position);
         }
 
         private Vector3 GetCameraRelativeMove(Vector2 inputVec)
@@ -139,11 +166,9 @@ namespace Enigma.Player
 
         public void SetProneVisual(bool prone)
         {
-            _isCrouching = prone;
-            _targetHeight = prone ? crouchHeight * 0.7f : standHeight;
-            if (prone)
-                ApplyHeightImmediate(_targetHeight);
-            // Altura baja procedural hasta que tengamos la animación
+            _isCrouching = false;
+            _targetHeight = standHeight;
+            _verticalVelocity = -2f;
         }
     }
 }

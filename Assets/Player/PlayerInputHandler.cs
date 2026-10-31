@@ -52,6 +52,8 @@ namespace Enigma.Player
         public bool NextPressedThisFrame { get; private set; }
         public int HotbarSlotPressedThisFrame { get; private set; } = -1;
         // 0-7 = tecla 1-8; -1 = ninguna.
+        public float ScrollDelta { get; private set; }
+        // Rueda: zoom de cámara, no hotbar.
 
         public bool GameplayInputEnabled { get; private set; } = true;
 
@@ -105,6 +107,7 @@ namespace Enigma.Player
             PreviousPressedThisFrame = false;
             NextPressedThisFrame = false;
             HotbarSlotPressedThisFrame = -1;
+            ScrollDelta = 0f;
             _backConsumed = false;
 
             if (_pause == null)
@@ -131,6 +134,7 @@ namespace Enigma.Player
                 return;
             }
 
+            ScrollDelta = ReadScrollDelta();
             MoveInput = _move.ReadValue<Vector2>();
             LookInput = _look.ReadValue<Vector2>();
             SprintHeld = _sprint.IsPressed();
@@ -139,18 +143,12 @@ namespace Enigma.Player
             CrouchHeld = _crouch.IsPressed();
         }
 
-        // Rueda cicla el slot; 1-8 saltan directo.
+        // 1-8 eligen slot. La rueda no cicla.
         private void ReadHotbar()
         {
             if (_previous != null && _previous.WasPressedThisFrame())
                 PreviousPressedThisFrame = true;
             if (_next != null && _next.WasPressedThisFrame())
-                NextPressedThisFrame = true;
-
-            float scroll = ReadScrollDelta();
-            if (scroll > 0.0001f)
-                PreviousPressedThisFrame = true;
-            else if (scroll < -0.0001f)
                 NextPressedThisFrame = true;
 
             var kb = Keyboard.current;

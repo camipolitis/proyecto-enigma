@@ -42,6 +42,12 @@ namespace Enigma.Interaction
                 return;
             }
 
+            if (input != null && !input.GameplayInputEnabled)
+            {
+                ClearPrompt();
+                return;
+            }
+
             if (ModalStack.Instance != null && ModalStack.Instance.BlocksWorldInteract())
             {
                 ClearPrompt();

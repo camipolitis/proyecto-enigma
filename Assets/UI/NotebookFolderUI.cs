@@ -61,6 +61,7 @@ namespace Enigma.UI
             if (root != null)
                 root.SetActive(true);
 
+            Enigma.Audio.SfxPlayer.Instance?.Play("notebook");
             ModalStack.Instance?.Push(ModalKind.Document);
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;

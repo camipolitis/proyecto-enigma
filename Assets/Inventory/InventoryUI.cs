@@ -19,6 +19,7 @@ namespace Enigma.Inventory
         // Hotbar visible en exploración
 
         [SerializeField] private DocumentReaderUI readerUi;
+        [SerializeField] private ItemInspectUI inspectUi;
 
         private void OnEnable()
         {
@@ -36,9 +37,17 @@ namespace Enigma.Inventory
         {
             if (readerUi == null)
                 readerUi = FindFirstObjectByType<DocumentReaderUI>();
+            if (inspectUi == null)
+                inspectUi = GetComponent<ItemInspectUI>();
+            if (inspectUi == null)
+                inspectUi = gameObject.AddComponent<ItemInspectUI>();
 
-            if (panelRoot != null && !hotbarAlwaysVisible)
-                panelRoot.SetActive(false);
+            if (panelRoot != null)
+            {
+                panelRoot.transform.localScale = new Vector3(0.85f, 0.85f, 1f);
+                if (!hotbarAlwaysVisible)
+                    panelRoot.SetActive(false);
+            }
             Refresh();
         }
 
@@ -52,10 +61,10 @@ namespace Enigma.Inventory
             if (input.NextPressedThisFrame)
                 inventory.SelectNext();
             if (input.HotbarSlotPressedThisFrame >= 0)
+            {
                 inventory.SelectIndex(input.HotbarSlotPressedThisFrame);
-
-            if (input.InventoryPressedThisFrame)
                 TryInspectSelected();
+            }
         }
 
         private void TryInspectSelected()
@@ -99,15 +108,32 @@ namespace Enigma.Inventory
                 return;
 
             inventory.SelectIndex(index);
+            TryInspectSelected();
         }
 
         private void InspectSelected()
         {
-            if (readerUi == null)
-                readerUi = FindFirstObjectByType<DocumentReaderUI>();
-            if (readerUi == null || inventory == null)
+            if (inventory == null)
                 return;
-            readerUi.Inspect(inventory.SelectedItem);
+            var item = inventory.SelectedItem;
+            if (item == null)
+                return;
+            // Las hojas con número se leen como documento: el número tiene que verse
+            if (item.inspectDoc != null)
+            {
+                if (readerUi == null)
+                    readerUi = FindFirstObjectByType<DocumentReaderUI>(FindObjectsInactive.Include);
+                if (readerUi != null)
+                {
+                    readerUi.Inspect(item);
+                    return;
+                }
+            }
+            if (inspectUi == null)
+                inspectUi = GetComponent<ItemInspectUI>();
+            if (inspectUi == null)
+                inspectUi = gameObject.AddComponent<ItemInspectUI>();
+            inspectUi.OpenItem(item);
         }
     }
 }

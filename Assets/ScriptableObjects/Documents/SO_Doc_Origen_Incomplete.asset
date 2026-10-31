@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: origen_incomplete
   title: EXPERIMENTO ORIGEN
-  body: "EXPERIMENTO ORIGEN\nP\xE1ginas faltantes.\nEl programa existe. El resto no est\xE1.\n- M."
+  body: "EXPERIMENTO ORIGEN — COPIA INCOMPLETA\n\nClasificación: restringido\nÍndice: 1. Antecedentes  2. Protocolo  3. —\n\nPáginas 4–12: no incluidas en esta copia.\nFecha: ........     Nómina: ........\nSello de control: <color=#7a1f1a>████ ██</color>\n\n— M."
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
-  viewImage: {fileID: 0}
+  viewImage: {fileID: 2800000, guid: b4295c07f90a2bdab95f8cd20b4ea0c1, type: 3}
   openVoice: {fileID: 0}
+  tensionOnRead: 1
