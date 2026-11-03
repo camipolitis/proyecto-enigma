@@ -16,36 +16,36 @@ MonoBehaviour:
   - id: door_locked
     text: "Est\xE1 bloqueada..."
     duration: 2.5
-    voice: {fileID: 8300000, guid: 24e942fabb67fa24393ee225956068cc, type: 3}
+    voice: {fileID: 8300000, guid: 5e9edbedf07bc8c408d5454c61d6a4e5, type: 3}
   - id: lock_fail
     text: "Cu\xE1l ser\xE1 el c\xF3digo?..."
     duration: 2.5
-    voice: {fileID: 8300000, guid: 48971e6658eeaa540a650259dc02f9bf, type: 3}
+    voice: {fileID: 8300000, guid: 8f1f7f6217f3ce84c8bf140dab074037, type: 3}
   - id: lock_ok
-    text: "Bien..."
-    duration: 2.0
-    voice: {fileID: 8300000, guid: ce49c5950a81ed54ab0de70cc6f71a35, type: 3}
+    text: Bien...
+    duration: 2
+    voice: {fileID: 8300000, guid: f6c33b81d0e8ccc4a83e6602573158b4, type: 3}
   - id: tape_pickup
-    text: "Esto puede servir..."
+    text: Esto puede servir...
     duration: 2.5
-    voice: {fileID: 8300000, guid: 0573b79e8d9e8334ea6a545e980b5bf2, type: 3}
+    voice: {fileID: 8300000, guid: 96a7470d76de3b149ab3c511e1798dbe, type: 3}
   - id: reel_need
     text: "Est\xE1 vac\xEDo..."
     duration: 2.5
-    voice: {fileID: 0}
+    voice: {fileID: 8300000, guid: 43101887add68d7429eb6937aa9bbc96, type: 3}
   - id: reel_ok
     text: "Se prendi\xF3..."
     duration: 2.5
     voice: {fileID: 0}
   - id: seq_fail
-    text: "No..."
+    text: No...
     duration: 2.5
     voice: {fileID: 0}
   - id: key_pickup
-    text: "Una llave..."
+    text: Una llave...
     duration: 2.5
     voice: {fileID: 0}
   - id: note_release
-    text: "M..."
+    text: M...
     duration: 1.5
     voice: {fileID: 8300000, guid: 2cf75e87f58db494d9f9756a6d3910a9, type: 3}
