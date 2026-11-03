@@ -16,23 +16,23 @@ MonoBehaviour:
   - id: door_locked
     text: "Est\xE1 bloqueada..."
     duration: 2.5
-    voice: {fileID: 8300000, guid: 24e942fabb67fa24393ee225956068cc, type: 3}
+    voice: {fileID: 8300000, guid: 5e9edbedf07bc8c408d5454c61d6a4e5, type: 3}
   - id: missing_battery
     text: "Hace falta una bater\xEDa..."
     duration: 2.5
-    voice: {fileID: 8300000, guid: 04b93ccb26c98614a8cbde89127a391c, type: 3}
+    voice: {fileID: 8300000, guid: d881afef8d9e0bd4bb920fac7c8815be, type: 3}
   - id: battery_pickup
     text: Esto puede servir...
     duration: 2.5
-    voice: {fileID: 8300000, guid: 0573b79e8d9e8334ea6a545e980b5bf2, type: 3}
+    voice: {fileID: 8300000, guid: 96a7470d76de3b149ab3c511e1798dbe, type: 3}
   - id: notebook_boot
     text: "A\xFAn conserva algo de bater\xEDa..."
     duration: 2.5
-    voice: {fileID: 8300000, guid: 3897df87a34da194fb9487f333896372, type: 3}
+    voice: {fileID: 8300000, guid: 94f969ed9041ee74ab7c110201093f14, type: 3}
   - id: calendar_hint
     text: Trece de diciembre del 78...
     duration: 2.5
-    voice: {fileID: 8300000, guid: 1ae3ac3af19887d4aaf624837f95d86c, type: 3}
+    voice: {fileID: 8300000, guid: aeed35ce1baac0f4a8d62be69988cdd3, type: 3}
   - id: lock_fail
     text: "Cu\xE1l ser\xE1 el c\xF3digo?..."
     duration: 2.5
