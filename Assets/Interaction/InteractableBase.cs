@@ -20,6 +20,8 @@ namespace Enigma.Interaction
         [SerializeField] private Transform completeFxAnchor;
         [SerializeField] private float completeFxLife = 6f;
         // Efecto cuando la E lo resuelve. Sin anchor sale del piso, bajo el objeto.
+        [SerializeField] private Bounds useZone;
+        // En mundo. Con tamaño, solo se usa con el jugador adentro (cuarto cerrado).
 
         private bool _localCompleted;
 
@@ -33,6 +35,21 @@ namespace Enigma.Interaction
         protected void AnchorCompleteFx(Transform anchor)
         {
             completeFxAnchor = anchor;
+        }
+
+        public void SetUseZone(Bounds zone)
+        {
+            useZone = zone;
+        }
+
+        public bool HasUseZone => useZone.size.sqrMagnitude > 0.0001f;
+
+        private bool InUseZone(InteractContext context)
+        {
+            // Sin actor no hay posición que medir: la zona no bloquea
+            if (!HasUseZone || context == null || context.Actor == null)
+                return true;
+            return useZone.Contains(context.Actor.transform.position);
         }
 
         public virtual string GetPrompt(InteractContext context)
@@ -50,7 +67,7 @@ namespace Enigma.Interaction
                 return false;
             if (IsCompleted())
                 return false;
-            return true;
+            return InUseZone(context);
         }
 
         public void Interact(InteractContext context)

@@ -82,6 +82,7 @@ namespace Enigma.Environment
                 || kit.IndexOf("metal-panel") >= 0
                 || kit.IndexOf("HospitalBed") >= 0
                 || kit.IndexOf("Bathroom_Sink") >= 0
+                || kit.IndexOf("Bathroom_Toilet") >= 0
                 || kit.IndexOf("books") >= 0
                 || kit.IndexOf("workbench") >= 0
                 || kit.IndexOf("table") >= 0
@@ -304,7 +305,7 @@ namespace Enigma.Environment
             "Hatch", "ladder", "Door", "Lintel", "Exit", "Projector", "Stencil", "Cam", "Sink", "Lever", "Lock", "Reader",
             "Wires", "Calendar", "Painting", "Magnet", "Slot", "Rope", "Drawer", "Panel_", "Button", "Plate",
             "Metal_", "Wall", "Hall_", "Passage", "Ramp", "Pit", "Stair", "Rim", "Lid", "Shelf", "Cabinet", "Locker_Door",
-            "Doc_", "Print_", "Sheet", "Generator", "Burn", "_Leg", "Ceiling", "CredentialTape"
+            "Doc_", "Print_", "Sheet", "Generator", "Burn", "_Leg", "Ceiling", "CredentialTape", "Mirror"
         };
 
         private static bool IsMounted(string n)

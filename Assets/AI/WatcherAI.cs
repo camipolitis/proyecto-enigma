@@ -25,6 +25,8 @@ namespace Enigma.AI
 
         [SerializeField] private Transform player;
         [SerializeField] private Transform led;
+        // Lo que tapa la vista: todo menos TransparentFX (vidrios)
+        [SerializeField] private LayerMask sightBlockers = ~(1 << 1);
 
         private State _state = State.Idle;
         private float _timer;
@@ -143,7 +145,7 @@ namespace Enigma.AI
             Vector3 origin = transform.position + transform.forward * 0.12f;
             Vector3 target = player.position + Vector3.up * 1.1f;
             Vector3 dir = target - origin;
-            if (!Physics.Raycast(origin, dir.normalized, out var hit, dir.magnitude, ~0, QueryTriggerInteraction.Ignore))
+            if (!Physics.Raycast(origin, dir.normalized, out var hit, dir.magnitude, sightBlockers, QueryTriggerInteraction.Ignore))
                 return false;
             return hit.transform == player || hit.transform.IsChildOf(player);
         }

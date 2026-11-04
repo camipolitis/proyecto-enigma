@@ -166,7 +166,6 @@ namespace Enigma.Environment
             Put("workbench", new Vector3(-6.6f, 0f, -4.2f), 90f, _rust, 0.9f);
             Put("table-display", new Vector3(6.35f, 0f, -3.35f), -90f, _rust, 0.9f);
             Put("table-display-small", new Vector3(-6.55f, 0f, -0.4f), 90f, _rust, 0.85f);
-            Put("Table_RoundSmall", new Vector3(6.55f, 0f, 0.6f), 8f, _wood, 0.85f);
             Put("Chair_3", new Vector3(5.15f, 0f, -4.15f), 40f, _wood, 0.95f);
 
             Put("Details_Cylinder", new Vector3(-6.5f, 0.38f, -4.15f), 18f, _rust);
@@ -921,7 +920,7 @@ namespace Enigma.Environment
             PaintGoNamed("Generator", _rust);
             PaintGoNamed("Lockers", _rust);
             PaintGoNamed("BurnMark", _rust);
-            PaintGoNamed("HatchLid", _rust);
+            PaintGoNamed("HatchLid", Mat("Mat_HatchLid"));
             PaintGoNamed("Chair_Origen", _rust);
             PaintGoNamed("ArchiveDesk", _wood);
             PaintGoNamed("Console", _rust);
@@ -1419,12 +1418,12 @@ namespace Enigma.Environment
         {
             if (sceneName == "Level01_Room")
             {
-                PlaceDecal("Kit_Leak_N1a", "Docs/Leaking001_Color", "Docs/Leaking001_Opacity", new Vector3(-9.88f, 2.1f, -2.4f), new Vector3(0f, 90f, 0f), new Vector3(1.8f, 2.4f, 1f));
-                PlaceDecal("Kit_Rust_N1a", "Docs/Rust001_Color", "Docs/Rust001_Opacity", new Vector3(9.88f, 1.4f, 3.2f), new Vector3(0f, -90f, 0f), new Vector3(1.5f, 1.8f, 1f));
+                PlaceDecal("Kit_Leak_N1a", "Docs/Leaking001_Color", "Docs/Leaking001_Opacity", new Vector3(-9.84f, 2.1f, -2.4f), new Vector3(0f, 90f, 0f), new Vector3(1.8f, 2.4f, 1f));
+                PlaceDecal("Kit_Rust_N1a", "Docs/Rust001_Color", "Docs/Rust001_Opacity", new Vector3(9.84f, 1.4f, 3.2f), new Vector3(0f, -90f, 0f), new Vector3(1.5f, 1.8f, 1f));
             }
             else if (sceneName == "Level02_Lab")
             {
-                PlaceDecal("Kit_Leak_N2a", "Docs/Leaking003_Color", "Docs/Leaking003_Opacity", new Vector3(7.58f, 2.2f, 1.1f), new Vector3(0f, -90f, 0f), new Vector3(1.6f, 2.2f, 1f));
+                PlaceDecal("Kit_Leak_N2a", "Docs/Leaking003_Color", "Docs/Leaking003_Opacity", new Vector3(7.58f, 2.2f, -4.1f), new Vector3(0f, -90f, 0f), new Vector3(1.6f, 2.2f, 1f));
                 PlaceDecal("Kit_Rust_N2a", "Docs/Rust001_Color", "Docs/Rust001_Opacity", new Vector3(-7.58f, 1.5f, -2.4f), new Vector3(0f, 90f, 0f), new Vector3(1.4f, 1.7f, 1f));
             }
             else if (sceneName == "Level03_Archives")
@@ -1450,7 +1449,8 @@ namespace Enigma.Environment
             go.name = name;
             go.transform.SetParent(_root, false);
             go.transform.position = pos;
-            go.transform.rotation = Quaternion.Euler(euler);
+            // El Quad se ve desde -Z: con el giro extra la cara visible queda del lado del cuarto que indica euler
+            go.transform.rotation = Quaternion.Euler(euler) * Quaternion.Euler(0f, 180f, 0f);
             go.transform.localScale = scale;
             StripColliders(go);
             var rend = go.GetComponent<MeshRenderer>();
@@ -1534,7 +1534,20 @@ namespace Enigma.Environment
             return _screenOff;
         }
 
+        // Las manchas de una escena con la misma textura comparten material
+        private readonly System.Collections.Generic.Dictionary<string, Material> _leakMats = new System.Collections.Generic.Dictionary<string, Material>();
+
         private Material LeakMat(string colorPath, string opacityPath)
+        {
+            string key = colorPath + "|" + opacityPath;
+            if (_leakMats.TryGetValue(key, out var cached) && cached != null)
+                return cached;
+            var mat = NewLeakMat(colorPath, opacityPath);
+            _leakMats[key] = mat;
+            return mat;
+        }
+
+        private static Material NewLeakMat(string colorPath, string opacityPath)
         {
             var lit = Shader.Find("Universal Render Pipeline/Lit");
             var mat = lit != null ? new Material(lit) : new Material(Shader.Find("Sprites/Default"));

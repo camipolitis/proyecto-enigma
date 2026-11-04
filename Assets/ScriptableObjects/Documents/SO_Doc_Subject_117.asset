@@ -23,3 +23,5 @@ MonoBehaviour:
   viewImage: {fileID: 2800000, guid: e5f0c3d860719241e0c6f3a9d2b51738, type: 3}
   openVoice: {fileID: 0}
   cornerLetter: E
+  titleFont: {fileID: 12800000, guid: a123a68c00d73354ba63e164a69fb96b, type: 3}
+  bodyFont: {fileID: 12800000, guid: 4e24c98e2a6c5904697c51c2b22699e8, type: 3}

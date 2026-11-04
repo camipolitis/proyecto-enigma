@@ -96,7 +96,7 @@ namespace Enigma.UI
             else if (fromComputer)
                 LayoutComputer(document);
             else
-                LayoutPhysical(photo);
+                LayoutPhysical(photo, document);
 
             ApplyMarks(document, burned, mark, markBefore);
             OpenModal();
@@ -183,7 +183,11 @@ namespace Enigma.UI
                 label.resizeTextMinSize = 10;
                 label.resizeTextMaxSize = 72;
             }
-            label.font = bodyLabel != null ? bodyLabel.font : label.font;
+            // Marcador rojo: misma letra que los números de impresión
+            if (_script != null)
+                label.font = _script;
+            else if (bodyLabel != null)
+                label.font = bodyLabel.font;
             label.fontStyle = FontStyle.Bold;
             label.color = new Color(0.62f, 0.09f, 0.07f, 1f);
             label.text = letter;
@@ -330,7 +334,7 @@ namespace Enigma.UI
                 bodyLabel.gameObject.SetActive(false);
                 bodyLabel.text = body ?? string.Empty;
             }
-            LayoutPhysical(null);
+            LayoutPhysical(null, null);
             OpenModal();
         }
 
@@ -532,7 +536,7 @@ namespace Enigma.UI
             }
         }
 
-        private void LayoutPhysical(Texture photo)
+        private void LayoutPhysical(Texture photo, DocumentData document)
         {
             var host = Host();
             EnsureDimmer(host).gameObject.SetActive(true);
@@ -543,13 +547,20 @@ namespace Enigma.UI
             var paper = EnsurePaper(host);
 
             Font face = _antiqua != null ? _antiqua : _legacy;
+            Font titleFace = document != null && document.titleFont != null ? document.titleFont : face;
+            Font bodyFace = document != null && document.bodyFont != null ? document.bodyFont : face;
             Color ink = new Color(0.14f, 0.11f, 0.09f, 1f);
             bool hasPhoto = photo != null;
 
             if (titleLabel != null)
             {
                 titleLabel.gameObject.SetActive(true);
-                ApplyFont(titleLabel, face, 22, ink);
+                ApplyFont(titleLabel, titleFace, 22, ink);
+                // Un título largo se achica en su franja en vez de caer sobre el cuerpo
+                titleLabel.resizeTextForBestFit = true;
+                titleLabel.resizeTextMaxSize = titleLabel.fontSize;
+                titleLabel.resizeTextMinSize = Mathf.RoundToInt(titleLabel.fontSize * 0.6f);
+                titleLabel.verticalOverflow = VerticalWrapMode.Truncate;
                 titleLabel.alignment = TextAnchor.UpperLeft;
                 SitIn(titleLabel.rectTransform, paper.transform,
                     new Vector2(0.07f, 0.84f),
@@ -559,7 +570,12 @@ namespace Enigma.UI
             if (bodyLabel != null)
             {
                 bodyLabel.gameObject.SetActive(true);
-                ApplyFont(bodyLabel, face, 17, ink);
+                ApplyFont(bodyLabel, bodyFace, 17, ink);
+                // Si no entra en la hoja se achica en lugar de salirse del papel
+                bodyLabel.resizeTextForBestFit = true;
+                bodyLabel.resizeTextMaxSize = bodyLabel.fontSize;
+                bodyLabel.resizeTextMinSize = Mathf.RoundToInt(bodyLabel.fontSize * 0.6f);
+                bodyLabel.verticalOverflow = VerticalWrapMode.Truncate;
                 bodyLabel.alignment = TextAnchor.UpperLeft;
                 SitIn(bodyLabel.rectTransform, paper.transform,
                     new Vector2(0.07f, 0.06f),
@@ -719,7 +735,7 @@ namespace Enigma.UI
             if (_antiqua == null)
                 _antiqua = Resources.Load<Font>("Fonts/GlassAntiqua-Regular");
             if (_script == null)
-                _script = Resources.Load<Font>("Fonts/SegoeScript");
+                _script = Resources.Load<Font>("Fonts/GiveYouGlory-Regular");
             if (_legacy == null)
             {
                 _legacy = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -738,6 +754,7 @@ namespace Enigma.UI
             label.color = color;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
             label.verticalOverflow = VerticalWrapMode.Overflow;
+            label.resizeTextForBestFit = false;
         }
 
         // Los tamaños están pensados para un Canvas de referencia 800x600 (L1 usa 1920x1080)

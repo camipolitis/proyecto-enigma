@@ -37,5 +37,9 @@ namespace Enigma.Data
 
         public string cornerLetter;
         // Letra en rojo, circulada, abajo a la derecha de la hoja (expedientes).
+
+        public Font titleFont;
+        public Font bodyFont;
+        // Fuentes de la hoja en papel. Vacías = Glass Antiqua.
     }
 }

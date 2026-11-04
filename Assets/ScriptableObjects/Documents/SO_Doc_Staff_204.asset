@@ -22,3 +22,5 @@ MonoBehaviour:
   memoryCollectedMessage: Memoria recolectada
   viewImage: {fileID: 2800000, guid: b8c3f6a193a4c574b3f926dca5e84a6b, type: 3}
   openVoice: {fileID: 0}
+  titleFont: {fileID: 12800000, guid: a123a68c00d73354ba63e164a69fb96b, type: 3}
+  bodyFont: {fileID: 12800000, guid: 4e24c98e2a6c5904697c51c2b22699e8, type: 3}

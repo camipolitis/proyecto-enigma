@@ -8,7 +8,7 @@ namespace Enigma.Environment
     // Kenney en escena. Colliders del greybox se quedan.
     public partial class KitbashDressing : MonoBehaviour
     {
-        public const int BakeId = 39;
+        public const int BakeId = 42;
         public int bakedId;
 
         private Transform _root;
@@ -36,12 +36,15 @@ namespace Enigma.Environment
             ArrangeRooms(sceneName);
             OverlayNamed();
             Extra(sceneName);
+            SideRooms(sceneName);
             Lights(sceneName);
             PowerTubes(sceneName);
             CapShadows();
             Underground();
             Papers(sceneName);
             PaintGrey();
+            if (sceneName == "Level03_Archives")
+                DressArchiveHatch();
             if (sceneName == "Level02_Lab")
                 DressGenerator();
             SlabLegs("ArchiveDesk");
@@ -165,6 +168,7 @@ namespace Enigma.Environment
             DressRuntime(gameObject.scene.name);
             WireExitPads();
             SnapDoorExit();
+            SideRoomText();
 
             if (gameObject.scene.name == "Level03_Mezzanine")
             {
