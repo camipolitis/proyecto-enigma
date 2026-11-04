@@ -533,8 +533,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Audio.MusicPlayer
   menuLoop: {fileID: 8300000, guid: 3c8e1a92b0474d6f9e5c2b81a0d47f36, type: 3}
   pauseLoop: {fileID: 8300000, guid: 7f2b9d41c8e54a13b6a0e3d95c184720, type: 3}
-  level01Loop: {fileID: 8300000, guid: b2690372bc933f84aa8639ba366c2d7e, type: 3}
-  level02Loop: {fileID: 8300000, guid: 1aa97e0da208d9249ad1987f6c95d711, type: 3}
+  level01Loop: {fileID: 8300000, guid: a5d83e70f2164b9c8e4a1d027b593846, type: 3}
+  level02Loop: {fileID: 8300000, guid: 0e91c4b6a37d4f28b5d8e2a1c9460735, type: 3}
   level03Loop: {fileID: 8300000, guid: 8a32437e9c0174c468dec9e51d8e6400, type: 3}
   level04Loop: {fileID: 8300000, guid: f0b62df3ec8177b469b6458a94fa2d5f, type: 3}
   tensionLoop: {fileID: 8300000, guid: 0352746058556504f86030d599196976, type: 3}
@@ -595,43 +595,8 @@ MonoBehaviour:
   ambientGroup: {fileID: 24300004, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   interiorLoop: {fileID: 8300000, guid: a913401ed3ca72941ac701ba67682b91, type: 3}
   pitLoop: {fileID: 8300000, guid: 6c4df2e44291ff44c95872fdc059f3b1, type: 3}
-  bedVolume: 0.22
-  points:
-  - id: Amb3D_Fluorescent
-    sceneName: Level01_Room
-    worldPosition: {x: 0, y: 2.2, z: 0}
-    clip: {fileID: 8300000, guid: 6930af44245df794da12a7d6dd5403e7, type: 3}
-    minDistance: 1.5
-    maxDistance: 10
-    volume: 0.32
-  - id: Amb3D_Generator
-    sceneName: Level02_Lab
-    worldPosition: {x: 0, y: 1.2, z: 0.5}
-    clip: {fileID: 8300000, guid: 6ad82149b26d89c43af8fd6f017772cf, type: 3}
-    minDistance: 1.2
-    maxDistance: 12
-    volume: 0.38
-  - id: Amb3D_HatchAir
-    sceneName: Level03_Archives
-    worldPosition: {x: 0, y: 0.4, z: 2.4}
-    clip: {fileID: 8300000, guid: ab5c349ee0b23654bbce20b473bb2561, type: 3}
-    minDistance: 1
-    maxDistance: 11
-    volume: 0.34
-  - id: Amb3D_Pipes
-    sceneName: Level03_Mezzanine
-    worldPosition: {x: 0, y: 1.6, z: -2.4}
-    clip: {fileID: 8300000, guid: 30e3ea3d06211dd46a6d9c7b99dfb6c4, type: 3}
-    minDistance: 1.2
-    maxDistance: 10
-    volume: 0.3
-  - id: Amb3D_PitDrip
-    sceneName: Level04_Origen
-    worldPosition: {x: 0, y: -2.4, z: 0}
-    clip: {fileID: 8300000, guid: d3adca17afa2dbc41a52d00b61386203, type: 3}
-    minDistance: 1.5
-    maxDistance: 14
-    volume: 0.4
+  interiorVolume: 0.11
+  pitVolume: 0.6
 --- !u!1 &210000351
 GameObject:
   m_ObjectHideFlags: 0

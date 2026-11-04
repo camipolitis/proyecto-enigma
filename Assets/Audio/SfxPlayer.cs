@@ -75,7 +75,7 @@ namespace Enigma.Audio
             src.pitch = entry.clips != null && CountClips(entry.clips) == 1
                 ? Random.Range(0.96f, 1.04f)
                 : 1f;
-            src.PlayOneShot(clip);
+            src.PlayOneShot(clip, entry.volume);
         }
 
         private AudioClip Pick(string id, AudioClip[] clips)
