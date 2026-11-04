@@ -2031,7 +2031,8 @@ MonoBehaviour:
     gratuitos de Poly Pizza (Poly by Google, Kay Lousberg, Jarlan Perez, Ryan Donaldson,
     Bruno Oliveira, Jonathan Granskog, Daisuke Takeoka, Zsky, Marisha, Jeremy, Justin
     Randall, MrZombieUK, GRADD), Kenney, Quaternius, Poly Haven, ambientCG, Blend
-    Swap y Mixamo. Efectos: Cartoon FX Remaster (Jean Moreno). Fuentes: Google Fonts.</size>"
+    Swap y Mixamo. Efectos: Cartoon FX Remaster (Jean Moreno). Fuentes: Google Fonts
+    (OFL y Apache 2.0).</size>"
 --- !u!222 &210001014
 CanvasRenderer:
   m_ObjectHideFlags: 0

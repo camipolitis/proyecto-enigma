@@ -25,3 +25,5 @@ MonoBehaviour:
   openVoice: {fileID: 0}
   tensionOnRead: 0
   cornerLetter: 
+  titleFont: {fileID: 12800000, guid: 5463f9ce164543d48b95433762a29a71, type: 3}
+  bodyFont: {fileID: 12800000, guid: 5463f9ce164543d48b95433762a29a71, type: 3}

@@ -6,7 +6,8 @@ namespace Enigma.Interaction
     // Modelo de cada ítem: el mismo en el mundo y en la inspección del inventario.
     public static class ItemVisuals
     {
-        static Font _font;
+        static Font _marker;
+        static Font _note;
         static readonly System.Collections.Generic.Dictionary<Font, Material> _textMats = new System.Collections.Generic.Dictionary<Font, Material>();
 
         // Medida mayor en el mundo, cuando difiere de la de inspección (la hoja impresa es A4)
@@ -192,26 +193,51 @@ namespace Enigma.Interaction
             var paper = Mat("Mat_PrintPaper");
             Part(root, PrimitiveType.Cube, Vector3.zero, new Vector3(0.21f, 0.002f, 0.29f), paper);
 
-            if (_font == null)
-                _font = Resources.Load<Font>("Fonts/SegoeScript");
-            if (_font == null)
-                _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var txt = new GameObject("Print_Number");
             txt.transform.SetParent(root.transform, false);
             txt.transform.localPosition = new Vector3(0f, 0.0015f, 0f);
             txt.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             var tm = txt.AddComponent<TextMesh>();
             tm.text = number;
-            tm.font = _font;
+            tm.font = MarkerFont;
             tm.fontSize = 96;
             tm.characterSize = 0.009f;
             tm.anchor = TextAnchor.MiddleCenter;
             tm.alignment = TextAlignment.Center;
             tm.color = new Color(0.72f, 0.08f, 0.06f, 1f);
             var mr = txt.GetComponent<MeshRenderer>();
-            mr.sharedMaterial = FontMat(_font);
+            mr.sharedMaterial = FontMat(tm.font);
             mr.shadowCastingMode = ShadowCastingMode.Off;
             return root;
+        }
+
+        // Marcador rojo de las impresiones
+        public static Font MarkerFont => _marker != null ? _marker : (_marker = LoadFont("Fonts/GiveYouGlory-Regular"));
+
+        // Letra de la nota del dorso del cuadro
+        public static Font NoteFont => _note != null ? _note : (_note = LoadFont("Fonts/CedarvilleCursive-Regular"));
+
+        static Font LoadFont(string path)
+        {
+            var f = Resources.Load<Font>(path);
+            return f != null ? f : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        }
+
+        // Los modelos ya grabados conservan su TextMesh: se les pone la fuente vigente
+        public static void Refont(GameObject root)
+        {
+            if (root == null)
+                return;
+            foreach (var tm in root.GetComponentsInChildren<TextMesh>(true))
+            {
+                Font f = tm.name == "Print_Number" ? MarkerFont : tm.name == "Painting_Note" ? NoteFont : null;
+                if (f == null || tm.font == f)
+                    continue;
+                tm.font = f;
+                var mr = tm.GetComponent<MeshRenderer>();
+                if (mr != null)
+                    mr.sharedMaterial = FontMat(f);
+            }
         }
 
         // Frente: la pintura. Dorso: papel madera con la nota de Panizza, se lee al girar
@@ -235,10 +261,6 @@ namespace Enigma.Interaction
             var back = Part(root, PrimitiveType.Quad, new Vector3(0f, 0f, t * 0.25f), new Vector3(w, h, 1f), Mat("Mat_Kraft"));
             back.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
 
-            if (_font == null)
-                _font = Resources.Load<Font>("Fonts/SegoeScript");
-            if (_font == null)
-                _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var txt = new GameObject("Painting_Note");
             txt.transform.SetParent(root.transform, false);
             txt.transform.localPosition = new Vector3(0f, 0.04f, t * 0.25f + 0.002f);
@@ -248,7 +270,7 @@ namespace Enigma.Interaction
                 + "Querrán torcer el tiempo a su favor\ny el cielo, sempiterno, guardará la ceniza;\n"
                 + "cada ciudad será un cadáver que todavía respira.\n"
                 + "No es pigricia lo que me detiene:\nes saber que ya empezó.\n\n— Panizza";
-            tm.font = _font;
+            tm.font = NoteFont;
             tm.fontSize = 64;
             tm.characterSize = 0.0052f;
             tm.lineSpacing = 0.95f;
@@ -256,7 +278,7 @@ namespace Enigma.Interaction
             tm.alignment = TextAlignment.Center;
             tm.color = new Color(0.97f, 0.93f, 0.82f, 1f);
             var mr = txt.GetComponent<MeshRenderer>();
-            mr.sharedMaterial = FontMat(_font);
+            mr.sharedMaterial = FontMat(tm.font);
             mr.shadowCastingMode = ShadowCastingMode.Off;
             return root;
         }

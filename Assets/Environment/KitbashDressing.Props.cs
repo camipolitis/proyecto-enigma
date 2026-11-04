@@ -691,6 +691,7 @@ namespace Enigma.Environment
                 go.SetActive(true);
                 string id = "print_" + name.Substring(6);
                 ItemVisuals.Dress(go, id);
+                ItemVisuals.Refont(go);
                 // Al regrabar el modelo ya existe y Dress no apaga el cubo que RestoreHidden volvió a prender
                 HideSelf(go);
                 // El número se lee parado delante de la bandeja

@@ -1171,7 +1171,8 @@ namespace Enigma.Environment
             PlaceOrMoveRim("Kit_HatchRim_E", new Vector3(0.45f, y, 2.4f), new Vector3(0.1f, 0.1f, 0.9f));
             PlaceOrMoveRim("Kit_HatchRim_W", new Vector3(-0.45f, y, 2.4f), new Vector3(0.1f, 0.1f, 0.9f));
 
-            PlaceOrMoveSlab("Kit_HatchLid", new Vector3(0f, y - 0.12f, 2.78f), new Vector3(0.9f, 0.05f, 0.72f), _rust);
+            // Es la misma escotilla del piso del archivo vista desde abajo
+            PlaceOrMoveSlab("Kit_HatchLid", new Vector3(0f, y - 0.12f, 2.78f), new Vector3(0.9f, 0.05f, 0.72f), Mat("Mat_HatchLid"));
             var lid = FindLocal("Kit_HatchLid");
             if (lid != null)
                 lid.transform.rotation = Quaternion.Euler(70f, 0f, 0f);
@@ -1221,14 +1222,104 @@ namespace Enigma.Environment
 
         private void PlaceOrMoveRim(string name, Vector3 pos, Vector3 scale)
         {
+            var steel = Mat("Mat_WornSteel");
             var go = FindLocal(name);
             if (go == null)
             {
-                Slab(name, pos, scale, _rust);
+                Slab(name, pos, scale, steel);
                 return;
             }
             go.transform.position = pos;
             go.transform.localScale = scale;
+            Paint(go, steel);
+        }
+
+        // Escotilla del piso del archivo: marco, bisagras al norte, flejes, manija rebatible y rayones.
+        // El pivote queda en el eje de las bisagras para que la tapa gire desde ahí
+        private void DressArchiveHatch()
+        {
+            var pivotGo = FindLocal("HatchPivot");
+            var lidGo = FindLocal("HatchLid");
+            if (pivotGo == null || lidGo == null || Application.isPlaying)
+                return;
+            // La caja del greybox quedaba encima de la tapa y no se abría con ella; queda solo su collider
+            var proxy = FindLocal("Interactable_Hatch");
+            var proxyRend = proxy != null ? proxy.GetComponent<MeshRenderer>() : null;
+            if (proxyRend != null)
+                proxyRend.enabled = false;
+
+            var pivot = pivotGo.transform;
+            var lid = lidGo.transform;
+            pivot.localRotation = Quaternion.identity;
+            for (int i = pivot.childCount - 1; i >= 0; i--)
+            {
+                if (pivot.GetChild(i) != lid)
+                    DropGo(pivot.GetChild(i).gameObject);
+            }
+
+            var rend = lidGo.GetComponent<MeshRenderer>();
+            if (rend == null)
+                return;
+            Bounds b = rend.bounds;
+            Vector3 lidPos = lid.position;
+            pivot.position = new Vector3(b.center.x, b.max.y, b.max.z);
+            lid.position = lidPos;
+
+            var steel = Mat("Mat_WornSteel");
+            var dark = Mat("Mat_DarkPlastic");
+            float cx = b.center.x, cz = b.center.z, top = b.max.y;
+            float hx = b.extents.x, hz = b.extents.z;
+            const float rim = 0.09f, rimH = 0.07f;
+
+            // Fijo: marco al ras, hueco oscuro bajo la tapa y hojas de bisagra sobre el marco
+            HatchSlab("HatchFrame_N", new Vector3(cx, rimH * 0.5f, b.max.z + rim * 0.5f + 0.005f), new Vector3(hx * 2f + rim * 2f + 0.01f, rimH, rim), steel);
+            HatchSlab("HatchFrame_S", new Vector3(cx, rimH * 0.5f, b.min.z - rim * 0.5f - 0.005f), new Vector3(hx * 2f + rim * 2f + 0.01f, rimH, rim), steel);
+            HatchSlab("HatchFrame_E", new Vector3(b.max.x + rim * 0.5f + 0.005f, rimH * 0.5f, cz), new Vector3(rim, rimH, hz * 2f + 0.01f), steel);
+            HatchSlab("HatchFrame_W", new Vector3(b.min.x - rim * 0.5f - 0.005f, rimH * 0.5f, cz), new Vector3(rim, rimH, hz * 2f + 0.01f), steel);
+            HatchSlab("HatchShaft", new Vector3(cx, 0.004f, cz), new Vector3(hx * 2f, 0.008f, hz * 2f), dark);
+            for (int s = -1; s <= 1; s += 2)
+                HatchSlab(s < 0 ? "HatchLeaf_W" : "HatchLeaf_E", new Vector3(cx + s * 0.32f, rimH + 0.003f, b.max.z + rim * 0.5f), new Vector3(0.13f, 0.006f, 0.08f), steel);
+
+            // Móvil: todo lo que va sobre la tapa cuelga del pivote y gira con ella
+            for (int s = -1; s <= 1; s += 2)
+            {
+                string side = s < 0 ? "W" : "E";
+                float x = cx + s * 0.32f;
+                var knuckle = OnLid(pivot, "HatchHinge_" + side, new Vector3(x, top, b.max.z), new Vector3(0.044f, 0.07f, 0.044f), steel, PrimitiveType.Cylinder);
+                knuckle.transform.rotation = Quaternion.Euler(0f, 0f, 90f);
+                OnLid(pivot, "HatchStrap_" + side, new Vector3(x, top + 0.004f, b.max.z - 0.46f), new Vector3(0.09f, 0.008f, 0.9f), steel);
+                for (int k = 0; k < 3; k++)
+                    OnLid(pivot, "HatchBolt_" + side + k, new Vector3(x, top + 0.009f, b.max.z - 0.12f - k * 0.33f), new Vector3(0.022f, 0.003f, 0.022f), steel, PrimitiveType.Cylinder);
+            }
+
+            float hz0 = b.min.z + 0.07f;
+            OnLid(pivot, "HatchHandle_LugW", new Vector3(cx - 0.1f, top + 0.01f, hz0 + 0.02f), new Vector3(0.03f, 0.02f, 0.03f), steel);
+            OnLid(pivot, "HatchHandle_LugE", new Vector3(cx + 0.1f, top + 0.01f, hz0 + 0.02f), new Vector3(0.03f, 0.02f, 0.03f), steel);
+            OnLid(pivot, "HatchHandle_ArmW", new Vector3(cx - 0.093f, top + 0.008f, hz0 - 0.01f), new Vector3(0.014f, 0.014f, 0.06f), steel);
+            OnLid(pivot, "HatchHandle_ArmE", new Vector3(cx + 0.093f, top + 0.008f, hz0 - 0.01f), new Vector3(0.014f, 0.014f, 0.06f), steel);
+            OnLid(pivot, "HatchHandle_Bar", new Vector3(cx, top + 0.008f, hz0 - 0.04f), new Vector3(0.2f, 0.014f, 0.014f), steel);
+
+            // Rayones donde se pisa y se tira de la manija
+            float[] scratch = { -12f, 7f, 21f };
+            for (int k = 0; k < scratch.Length; k++)
+            {
+                var sc = OnLid(pivot, "HatchScratch_" + k, new Vector3(cx - 0.16f + k * 0.15f, top + 0.0008f, hz0 + 0.12f + k * 0.05f), new Vector3(0.2f, 0.0015f, 0.006f), steel);
+                sc.transform.rotation = Quaternion.Euler(0f, scratch[k], 0f);
+            }
+        }
+
+        // Piezas fijas de la escotilla sin collider: se pisan como parte del piso
+        private void HatchSlab(string name, Vector3 pos, Vector3 size, Material mat)
+        {
+            var go = Part(_root, name, Vector3.zero, size, mat);
+            go.transform.position = pos;
+        }
+
+        private static GameObject OnLid(Transform pivot, string name, Vector3 world, Vector3 size, Material mat, PrimitiveType type = PrimitiveType.Cube)
+        {
+            var go = Part(pivot, name, Vector3.zero, size, mat, type);
+            go.transform.position = world;
+            return go;
         }
 
         private void CoverN4Pit()

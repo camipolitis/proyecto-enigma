@@ -295,6 +295,7 @@ public static class KitbashBaker
 
         KitbashDressing.RestoreHidden(scene);
         ClearOld(scene, dressing);
+        SideRoomParts(scene);
         dressing.Bake(scene.name);
         UnpackKits(scene);
         foreach (var root in scene.GetRootGameObjects())
@@ -326,9 +327,139 @@ public static class KitbashBaker
         }
         if (scene.name == "Level02_Lab")
             BakeLabSystems(scene);
+        if (scene.name == "Level03_Archives")
+            HatchHingedNorth(scene);
         ApplyTheme(scene);
         EditorSceneManager.MarkSceneDirty(scene);
         return true;
+    }
+
+    // Con las bisagras al norte la tapa se levanta por el lado sur, el del jugador, y deja ver el hueco
+    private static void HatchHingedNorth(Scene scene)
+    {
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            foreach (var hatch in root.GetComponentsInChildren<Enigma.Interaction.ArrowLockInteractable>(true))
+            {
+                var so = new SerializedObject(hatch);
+                var pitch = so.FindProperty("openPitch");
+                pitch.floatValue = Mathf.Abs(pitch.floatValue);
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+        }
+    }
+
+    private const string SideDoorConfig = "Assets/ScriptableObjects/SO_Config_SideDoor.asset";
+    private const string NotebookConfig = "Assets/ScriptableObjects/SO_Config_BathNotebook.asset";
+    private const string NotebookDoc = "Assets/ScriptableObjects/Documents/SO_Doc_BathNotebook.asset";
+
+    // Puertas de los cuartitos y cuaderno del baño: llevan assets, se arman una vez y el vestido los ubica
+    private static void SideRoomParts(Scene scene)
+    {
+        if (scene.name == "Level01_Room")
+        {
+            SideDoor(scene, "Interactable_BathDoor", -90f);
+            BathNotebook(scene);
+        }
+        else if (scene.name == "Level02_Lab")
+            SideDoor(scene, "Interactable_OfficeDoor", 90f);
+    }
+
+    // N2 agrupa los interactuables; en N1 quedan en la raíz de la escena
+    private static void PlaceInteractable(Scene scene, GameObject go)
+    {
+        foreach (var root in scene.GetRootGameObjects())
+            if (root.name == "Interactables")
+            {
+                go.transform.SetParent(root.transform, false);
+                return;
+            }
+        SceneManager.MoveGameObjectToScene(go, scene);
+    }
+
+    private static GameObject FindInScene(Scene scene, string name)
+    {
+        foreach (var root in scene.GetRootGameObjects())
+            foreach (var t in root.GetComponentsInChildren<Transform>(true))
+                if (t.name == name)
+                    return t.gameObject;
+        return null;
+    }
+
+    private static void SideDoor(Scene scene, string name, float openYaw)
+    {
+        var config = AssetDatabase.LoadAssetAtPath<Enigma.Data.InteractableConfig>(SideDoorConfig);
+        if (config == null)
+        {
+            Debug.LogError("Kitbash bake: falta " + SideDoorConfig);
+            return;
+        }
+        var go = FindInScene(scene, name);
+        if (go == null)
+        {
+            go = new GameObject(name);
+            PlaceInteractable(scene, go);
+        }
+        go.layer = LayerMask.NameToLayer("Interactable");
+        var box = go.GetComponent<BoxCollider>();
+        if (box == null)
+            box = go.AddComponent<BoxCollider>();
+        box.isTrigger = true;
+        var pivot = go.transform.Find("DoorPivot");
+        if (pivot == null)
+        {
+            pivot = new GameObject("DoorPivot").transform;
+            pivot.SetParent(go.transform, false);
+        }
+        var door = go.GetComponent<Enigma.Interaction.ConditionalDoorInteractable>();
+        if (door == null)
+            door = go.AddComponent<Enigma.Interaction.ConditionalDoorInteractable>();
+        var so = new SerializedObject(door);
+        so.FindProperty("config").objectReferenceValue = config;
+        so.FindProperty("doorPivot").objectReferenceValue = pivot;
+        so.FindProperty("openYaw").floatValue = openYaw;
+        so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static void BathNotebook(Scene scene)
+    {
+        var config = AssetDatabase.LoadAssetAtPath<Enigma.Data.InteractableConfig>(NotebookConfig);
+        var doc = AssetDatabase.LoadAssetAtPath<Enigma.Data.DocumentData>(NotebookDoc);
+        if (config == null || doc == null)
+        {
+            Debug.LogError("Kitbash bake: faltan los assets del cuaderno del baño");
+            return;
+        }
+        Enigma.UI.DocumentReaderUI reader = null;
+        Object dialogue = null;
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            if (reader == null)
+                reader = root.GetComponentInChildren<Enigma.UI.DocumentReaderUI>(true);
+            foreach (var other in root.GetComponentsInChildren<Enigma.Interaction.DocumentInteractable>(true))
+                if (dialogue == null && other.name == "Interactable_Note")
+                    dialogue = new SerializedObject(other).FindProperty("dialogue").objectReferenceValue;
+        }
+        var go = FindInScene(scene, "Interactable_BathNotebook");
+        if (go == null)
+        {
+            go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = "Interactable_BathNotebook";
+            PlaceInteractable(scene, go);
+        }
+        go.layer = LayerMask.NameToLayer("Interactable");
+        var rend = go.GetComponent<MeshRenderer>();
+        if (rend != null)
+            rend.sharedMaterial = Resources.Load<Material>("Mats/Mat_Kraft");
+        var note = go.GetComponent<Enigma.Interaction.DocumentInteractable>();
+        if (note == null)
+            note = go.AddComponent<Enigma.Interaction.DocumentInteractable>();
+        var so = new SerializedObject(note);
+        so.FindProperty("config").objectReferenceValue = config;
+        so.FindProperty("dialogue").objectReferenceValue = dialogue;
+        so.FindProperty("document").objectReferenceValue = doc;
+        so.FindProperty("readerUi").objectReferenceValue = reader;
+        so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static bool ThemeScene(Scene scene)
