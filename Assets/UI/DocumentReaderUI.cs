@@ -18,10 +18,14 @@ namespace Enigma.UI
         [SerializeField] private PlayerInputHandler input;
         [SerializeField] private MemoryJournal journal;
         [SerializeField] private MemoryJournalUI journalUi;
+        // Cuánto queda el subtítulo de una grabación sin clip
+        [SerializeField] private float listenSeconds = 8f;
 
         private DocumentData _current;
         private InteractContext _context;
         private bool _journalOnClose = true;
+        private float _listenUntil;
+        private bool _fromJournal;
         private Transform _host;
         private Font _zen;
         private Font _antiqua;
@@ -34,6 +38,9 @@ namespace Enigma.UI
 
         private MemoryJournal LiveJournal =>
             MemoryJournal.Instance != null ? MemoryJournal.Instance : journal;
+
+        // Abierto desde la lista de memorias: al cerrar la lista se cierra con ella
+        public bool FromJournal => IsOpen && _fromJournal;
 
         private void Start()
         {
@@ -54,17 +61,17 @@ namespace Enigma.UI
 
         public void Open(DocumentData document, InteractContext context, bool fromComputer)
         {
+            _fromJournal = false;
             _current = document;
             _context = context;
             _journalOnClose = true;
             LoadFonts();
 
-            bool cassette = document != null && document.id == "cassette_leak";
             bool burned = document != null && document.id != null && document.id.IndexOf("burn") >= 0;
             bool calendar = IsCalendar(document);
             bool print = IsPrint(document);
             Texture photo = null;
-            if (!fromComputer && !cassette && !burned && !calendar && !print)
+            if (!fromComputer && !burned && !calendar && !print)
                 photo = PickPhoto(document);
 
             if (titleLabel != null)
@@ -78,7 +85,7 @@ namespace Enigma.UI
             if (bodyLabel != null)
             {
                 bodyLabel.supportRichText = true;
-                string text = cassette ? CassetteBody() : (document != null ? document.body : string.Empty);
+                string text = document != null ? document.body : string.Empty;
                 bodyLabel.text = ExtractMark(text ?? string.Empty, out mark, out markBefore);
             }
 
@@ -89,7 +96,7 @@ namespace Enigma.UI
             else if (fromComputer)
                 LayoutComputer(document);
             else
-                LayoutPhysical(photo, cassette);
+                LayoutPhysical(photo);
 
             ApplyMarks(document, burned, mark, markBefore);
             OpenModal();
@@ -97,10 +104,24 @@ namespace Enigma.UI
             if (document != null && document.tensionOnRead)
                 Enigma.Audio.MusicPlayer.Instance?.EnterTension();
 
-            if (cassette && SubtitleSystem.Instance != null)
-                SubtitleSystem.Instance.Show(CassetteSpanish(), 8f, document.openVoice);
-            else if (document != null && document.openVoice != null && SubtitleSystem.Instance != null)
+            if (document != null && document.openVoice != null && SubtitleSystem.Instance != null)
                 SubtitleSystem.Instance.PlayClip(document.openVoice);
+        }
+
+        // Grabación: se escucha sin hoja y se guarda en el diario al empezar
+        public void Listen(DocumentData document)
+        {
+            _fromJournal = false;
+            if (document == null || Time.unscaledTime < _listenUntil)
+                return;
+            float duration = document.openVoice != null ? document.openVoice.length : listenSeconds;
+            _listenUntil = Time.unscaledTime + duration;
+            SubtitleSystem.Instance?.Show(document.body, duration, document.openVoice);
+            if (LiveJournal != null && LiveJournal.TryAdd(document))
+            {
+                GameFlagSystem.Instance?.Set("note_read", true);
+                journalUi?.ShowToast(document.memoryCollectedMessage);
+            }
         }
 
         // ((texto)) en el cuerpo: se muestra el texto y se le dibuja un círculo de tinta
@@ -124,8 +145,8 @@ namespace Enigma.UI
             if (paper == null)
                 return;
             HideMark(paper, "BurnOverlay");
-            HideMark(paper, "ClipMark");
             HideMark(paper, "SmokeMark");
+            HideMark(paper, "CornerLetter");
             if (bodyLabel != null)
                 HideMark(bodyLabel.transform, "InkRing");
 
@@ -134,12 +155,39 @@ namespace Enigma.UI
                 ShowOverlay(paper, "BurnOverlay", DocArt.Burn(id == "staff_burn_b" ? 2 : 1),
                     Vector2.zero, Vector2.one, 0f);
             if (id == "staff_rest")
-            {
                 ShowOverlay(paper, "SmokeMark", DocArt.Smoke(), new Vector2(0.02f, 0.62f), new Vector2(0.34f, 0.99f), 0f);
-                ShowOverlay(paper, "ClipMark", DocArt.Clip(), new Vector2(0.09f, 0.84f), new Vector2(0.15f, 1.02f), -8f);
-            }
+            if (document != null && !string.IsNullOrEmpty(document.cornerLetter))
+                ShowCornerLetter(paper, document.cornerLetter);
             if (!string.IsNullOrEmpty(mark) && bodyLabel != null && isActiveAndEnabled)
                 StartCoroutine(PlaceRing(mark, markBefore));
+        }
+
+        private void ShowCornerLetter(Transform paper, string letter)
+        {
+            var ring = ShowOverlay(paper, "CornerLetter", DocArt.Ring(), new Vector2(0.8f, 0.04f), new Vector2(0.96f, 0.17f), -6f);
+            var t = ring.transform.Find("Letter");
+            Text label = t != null ? t.GetComponent<Text>() : null;
+            if (label == null)
+            {
+                var go = new GameObject("Letter");
+                go.transform.SetParent(ring.transform, false);
+                var lrt = go.AddComponent<RectTransform>();
+                lrt.anchorMin = Vector2.zero;
+                lrt.anchorMax = Vector2.one;
+                lrt.offsetMin = Vector2.zero;
+                lrt.offsetMax = Vector2.zero;
+                label = go.AddComponent<Text>();
+                label.raycastTarget = false;
+                label.alignment = TextAnchor.MiddleCenter;
+                label.resizeTextForBestFit = true;
+                label.resizeTextMinSize = 10;
+                label.resizeTextMaxSize = 72;
+            }
+            label.font = bodyLabel != null ? bodyLabel.font : label.font;
+            label.fontStyle = FontStyle.Bold;
+            label.color = new Color(0.62f, 0.09f, 0.07f, 1f);
+            label.text = letter;
+            label.transform.localRotation = Quaternion.Euler(0f, 0f, 6f);
         }
 
         private static void HideMark(Transform parent, string name)
@@ -201,21 +249,6 @@ namespace Enigma.UI
             r.anchoredPosition = new Vector2(rect.xMin + prefixW + markW * 0.5f, rect.yMax - through + lineH * 0.5f);
         }
 
-        private static string CassetteBody()
-        {
-            return "<i>Wir verfügen über die Mittel, ORIGEN zu erreichen.\n"
-                + "Wer sich einmischt, weiß, womit er zu rechnen hat.\n"
-                + "Von diesem Tag an…</i>\n\n"
-                + CassetteSpanish();
-        }
-
-        private static string CassetteSpanish()
-        {
-            return "Tenemos los medios para llegar a ORIGEN.\n"
-                + "Quien interfiera sabe a lo que se enfrenta.\n"
-                + "A partir de este día…";
-        }
-
         private static bool IsCalendar(DocumentData document)
         {
             if (document == null)
@@ -256,7 +289,13 @@ namespace Enigma.UI
 
         public void OpenFromJournal(DocumentData document)
         {
+            if (document != null && document.audioOnly)
+            {
+                Listen(document);
+                return;
+            }
             Open(document, null, false);
+            _fromJournal = true;
         }
 
         public void Inspect(InventoryItem item)
@@ -275,6 +314,7 @@ namespace Enigma.UI
 
         public void OpenInspect(string title, string body)
         {
+            _fromJournal = false;
             _current = null;
             _context = null;
             _journalOnClose = false;
@@ -290,12 +330,13 @@ namespace Enigma.UI
                 bodyLabel.gameObject.SetActive(false);
                 bodyLabel.text = body ?? string.Empty;
             }
-            LayoutPhysical(null, false);
+            LayoutPhysical(null);
             OpenModal();
         }
 
         public override void Close()
         {
+            _fromJournal = false;
             if (!IsOpen)
                 return;
 
@@ -491,7 +532,7 @@ namespace Enigma.UI
             }
         }
 
-        private void LayoutPhysical(Texture photo, bool cassette)
+        private void LayoutPhysical(Texture photo)
         {
             var host = Host();
             EnsureDimmer(host).gameObject.SetActive(true);
@@ -518,7 +559,7 @@ namespace Enigma.UI
             if (bodyLabel != null)
             {
                 bodyLabel.gameObject.SetActive(true);
-                ApplyFont(bodyLabel, face, cassette ? 18 : 17, ink);
+                ApplyFont(bodyLabel, face, 17, ink);
                 bodyLabel.alignment = TextAnchor.UpperLeft;
                 SitIn(bodyLabel.rectTransform, paper.transform,
                     new Vector2(0.07f, 0.06f),
@@ -693,10 +734,20 @@ namespace Enigma.UI
                 return;
             if (font != null)
                 label.font = font;
-            label.fontSize = size;
+            label.fontSize = Mathf.RoundToInt(size * UiScale(label));
             label.color = color;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
             label.verticalOverflow = VerticalWrapMode.Overflow;
+        }
+
+        // Los tamaños están pensados para un Canvas de referencia 800x600 (L1 usa 1920x1080)
+        private static float UiScale(Component c)
+        {
+            var scaler = c.GetComponentInParent<CanvasScaler>(true);
+            if (scaler == null || scaler.uiScaleMode != CanvasScaler.ScaleMode.ScaleWithScreenSize)
+                return 1f;
+            Vector2 r = scaler.referenceResolution;
+            return Mathf.Lerp(r.x / 800f, r.y / 600f, scaler.matchWidthOrHeight);
         }
 
         private void PlayReleaseLine(InteractContext ctx, DocumentData doc)

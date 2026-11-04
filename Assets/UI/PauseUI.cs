@@ -17,6 +17,10 @@ namespace Enigma.UI
 
             if (input.PausePressedThisFrame)
                 pauseSystem.Toggle();
+
+            // Memorias se abre desde la pausa: Q la cierra solo si es el tope, así no le roba Q al lector
+            if (ModalStack.Instance != null && ModalStack.Instance.IsTop(ModalKind.Memories) && input.TryConsumeBack())
+                pauseSystem.CloseMemories();
         }
     }
 }

@@ -23,6 +23,7 @@ namespace Enigma.UI
                 ModalRoot.SetActive(true);
 
             ModalStack.Instance?.Push(Kind);
+            ModalStack.Instance?.Open(ModalRoot);
             ModalStack.Instance?.ApplyCursorForTop();
         }
 
@@ -35,7 +36,9 @@ namespace Enigma.UI
             if (ModalRoot != null)
                 ModalRoot.SetActive(false);
 
-            ModalStack.Instance?.TryPopSpecific(Kind);
+            // Puede cerrarse por flujo sin ser el tope: se saca su entrada donde esté
+            ModalStack.Instance?.TryRemove(Kind);
+            ModalStack.Instance?.Close(ModalRoot);
             ModalStack.Instance?.ApplyCursorForTop();
         }
 

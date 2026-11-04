@@ -11,8 +11,9 @@ namespace Enigma.Core
         WordEntry = 6,
         ArrowLock = 7,
         Computer = 8,
-        ItemInspect = 9
-        // Password, cables, letras, escotilla, escritorio e inspect 3D.
+        ItemInspect = 9,
+        Memories = 10
+        // Password, cables, letras, escotilla, escritorio, inspect 3D y memorias de la pausa.
     }
     // Orden numérico = prioridad... El stack real es LIFO
 }

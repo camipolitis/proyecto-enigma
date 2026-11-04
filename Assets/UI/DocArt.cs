@@ -2,13 +2,12 @@ using UnityEngine;
 
 namespace Enigma.UI
 {
-    // Arte de papel generado por código: tinta, quemaduras, clip y humo.
+    // Arte de papel generado por código: tinta, quemaduras y humo.
     public static class DocArt
     {
         static Texture2D _ring;
         static Texture2D _burn1;
         static Texture2D _burn2;
-        static Texture2D _clip;
         static Texture2D _smoke;
 
         static Texture2D NewTex(int w, int h)
@@ -125,42 +124,6 @@ namespace Enigma.UI
             else
                 _burn1 = t;
             return t;
-        }
-
-        // Clip de oficina: alambre doblado en dos óvalos
-        public static Texture2D Clip()
-        {
-            if (_clip != null)
-                return _clip;
-            const int w = 64, h = 192;
-            _clip = NewTex(w, h);
-            var px = new Color32[w * h];
-            var metal = new Color(0.55f, 0.56f, 0.58f);
-            var shine = new Color(0.85f, 0.86f, 0.88f);
-            for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++)
-            {
-                float a = 0f;
-                a = Mathf.Max(a, Loop(x, y, 32f, 96f, 24f, 88f));
-                a = Mathf.Max(a, Loop(x, y, 32f, 84f, 15f, 68f));
-                a = Mathf.Max(a, Loop(x, y, 32f, 104f, 7f, 60f));
-                float k = Mathf.Clamp01((x - 20f) / 30f);
-                var c = Color.Lerp(metal, shine, k * 0.6f);
-                c.a = a;
-                px[y * w + x] = c;
-            }
-            _clip.SetPixels32(px);
-            _clip.Apply();
-            return _clip;
-        }
-
-        static float Loop(int x, int y, float cx, float cy, float rx, float ry)
-        {
-            float dx = (x + 0.5f - cx) / rx, dy = (y + 0.5f - cy) / ry;
-            // Rectángulo redondeado: norma 4 para lados rectos
-            float d = Mathf.Pow(Mathf.Pow(Mathf.Abs(dx), 4f) + Mathf.Pow(Mathf.Abs(dy), 4f), 0.25f);
-            float px = Mathf.Abs(d - 1f) * Mathf.Min(rx, ry);
-            return Mathf.Clamp01(1.6f - px);
         }
 
         // Mancha de humo: marrón grisáceo difuso

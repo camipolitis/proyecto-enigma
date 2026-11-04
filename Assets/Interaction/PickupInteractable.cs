@@ -14,6 +14,7 @@ namespace Enigma.Interaction
         {
             if (item != null)
                 ItemVisuals.Dress(gameObject, item.id);
+            ItemVisuals.WorldText(gameObject);
         }
 
         protected override bool MeetsSuccessConditions(InteractContext context)

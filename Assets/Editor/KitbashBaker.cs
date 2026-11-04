@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using Enigma.Environment;
+using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 
 // Graba el kitbash en las escenas. No spawn en Play.
@@ -17,6 +19,16 @@ public static class KitbashBaker
         "Assets/Scenes/Level03_Mezzanine.unity",
         "Assets/Scenes/Level04_Origen.unity"
     };
+
+    // Escenas sin vestido: solo reciben el tema de la UI
+    private static readonly string[] ThemeOnlyPaths =
+    {
+        "Assets/Scenes/MainMenu.unity"
+    };
+
+    private const string ThemePath = "Assets/ScriptableObjects/UI/SO_UiTheme.asset";
+    private const string TitleFontPath = "Assets/Art/Fonts/StardosStencil/StardosStencil-Bold.ttf";
+    private const string BodyFontPath = "Assets/Art/Fonts/SpecialElite/SpecialElite-Regular.ttf";
 
     static KitbashBaker()
     {
@@ -33,7 +45,7 @@ public static class KitbashBaker
         if (!string.IsNullOrEmpty(known) && known.EndsWith(".blend", System.StringComparison.OrdinalIgnoreCase))
             AssetDatabase.DeleteAsset(known);
 
-        const string batteryPath = "Assets/Art/Props/CarBattery/car battery.blend";
+        const string batteryPath = "Assets/Art/Models/Props/CarBattery/car battery.blend";
         if (AssetDatabase.LoadMainAssetAtPath(batteryPath) != null)
             AssetDatabase.DeleteAsset(batteryPath);
 
@@ -96,9 +108,11 @@ public static class KitbashBaker
             had.Add(SceneManager.GetSceneAt(i).path);
 
         bool ok = true;
-        for (int p = 0; p < Paths.Length; p++)
+        var all = new List<string>(Paths);
+        all.AddRange(ThemeOnlyPaths);
+        for (int p = 0; p < all.Count; p++)
         {
-            var path = Paths[p];
+            var path = all[p];
             var scene = default(Scene);
             bool opened = false;
             for (int i = 0; i < SceneManager.sceneCount; i++)
@@ -123,7 +137,8 @@ public static class KitbashBaker
 
             var prev = SceneManager.GetActiveScene();
             SceneManager.SetActiveScene(scene);
-            if (BakeScene(scene, force))
+            bool baked = p < Paths.Length ? BakeScene(scene, force) : ThemeScene(scene);
+            if (baked)
             {
                 if (!EditorSceneManager.SaveScene(scene))
                     ok = false;
@@ -136,9 +151,114 @@ public static class KitbashBaker
 
         if (ok)
         {
+            BakeIcons();
             EditorPrefs.SetInt("EnigmaKitBakeVer", KitbashDressing.BakeId);
             EditorPrefs.DeleteKey("EnigmaKitBakeForce");
         }
+    }
+
+    private const string IconDir = "Assets/Art/Textures/Icons";
+    private const int IconSize = 128;
+
+    // Miniaturas del hotbar: el modelo que se inspecciona, en tres cuartos y con fondo transparente
+    private static void BakeIcons()
+    {
+        var guids = AssetDatabase.FindAssets("t:InventoryItem");
+        if (guids.Length == 0)
+            return;
+        System.IO.Directory.CreateDirectory(IconDir);
+        var preview = EditorSceneManager.NewPreviewScene();
+        var camGo = new GameObject("IconCamera");
+        SceneManager.MoveGameObjectToScene(camGo, preview);
+        var cam = camGo.AddComponent<Camera>();
+        cam.scene = preview;
+        cam.enabled = false;
+        cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
+        cam.fieldOfView = 25f;
+        AddIconLight(preview, Quaternion.Euler(40f, -35f, 0f), 1.3f);
+        AddIconLight(preview, Quaternion.Euler(-15f, 150f, 0f), 0.6f);
+        var rt = new RenderTexture(IconSize, IconSize, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
+        cam.targetTexture = rt;
+        var tex = new Texture2D(IconSize, IconSize, TextureFormat.RGBA32, false);
+        var written = new List<(Enigma.Data.InventoryItem item, string path)>();
+
+        foreach (var guid in guids)
+        {
+            var item = AssetDatabase.LoadAssetAtPath<Enigma.Data.InventoryItem>(AssetDatabase.GUIDToAssetPath(guid));
+            if (item == null || string.IsNullOrEmpty(item.id))
+                continue;
+            var model = Enigma.UI.ItemInspectUI.BuildModel(item);
+            if (model == null)
+                continue;
+            SceneManager.MoveGameObjectToScene(model, preview);
+            var rends = model.GetComponentsInChildren<Renderer>(true);
+            if (rends.Length == 0)
+            {
+                Object.DestroyImmediate(model);
+                continue;
+            }
+            Bounds b = rends[0].bounds;
+            for (int i = 1; i < rends.Length; i++)
+                b.Encapsulate(rends[i].bounds);
+            Vector3 dir = new Vector3(0.55f, 0.6f, -1f).normalized;
+            float dist = b.extents.magnitude / Mathf.Sin(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            cam.transform.position = b.center + dir * dist;
+            cam.transform.LookAt(b.center);
+            cam.nearClipPlane = Mathf.Max(0.01f, dist - b.extents.magnitude * 2f);
+            cam.farClipPlane = dist + b.extents.magnitude * 2f;
+            cam.Render();
+
+            var prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            tex.ReadPixels(new Rect(0, 0, IconSize, IconSize), 0, 0);
+            tex.Apply();
+            RenderTexture.active = prev;
+            string path = IconDir + "/Icon_" + item.id + ".png";
+            // Solo se reescribe si el ícono cambió, para no ensuciar el control de versiones
+            byte[] png = tex.EncodeToPNG();
+            if (!System.IO.File.Exists(path) || !System.Linq.Enumerable.SequenceEqual(System.IO.File.ReadAllBytes(path), png))
+                System.IO.File.WriteAllBytes(path, png);
+            written.Add((item, path));
+            Object.DestroyImmediate(model);
+        }
+
+        cam.targetTexture = null;
+        rt.Release();
+        Object.DestroyImmediate(tex);
+        EditorSceneManager.ClosePreviewScene(preview);
+        AssetDatabase.Refresh();
+
+        foreach (var (item, path) in written)
+        {
+            if (AssetImporter.GetAtPath(path) is TextureImporter imp
+                && (imp.textureType != TextureImporterType.Sprite || imp.spriteImportMode != SpriteImportMode.Single
+                    || !imp.alphaIsTransparency || imp.mipmapEnabled))
+            {
+                imp.textureType = TextureImporterType.Sprite;
+                imp.spriteImportMode = SpriteImportMode.Single;
+                imp.alphaIsTransparency = true;
+                imp.mipmapEnabled = false;
+                imp.SaveAndReimport();
+            }
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite != null && item.icon != sprite)
+            {
+                item.icon = sprite;
+                EditorUtility.SetDirty(item);
+            }
+        }
+        AssetDatabase.SaveAssets();
+    }
+
+    private static void AddIconLight(Scene scene, Quaternion rot, float intensity)
+    {
+        var go = new GameObject("IconLight");
+        SceneManager.MoveGameObjectToScene(go, scene);
+        go.transform.rotation = rot;
+        var l = go.AddComponent<Light>();
+        l.type = LightType.Directional;
+        l.intensity = intensity;
     }
 
     private static bool BakeScene(Scene scene, bool force)
@@ -177,8 +297,149 @@ public static class KitbashBaker
         ClearOld(scene, dressing);
         dressing.Bake(scene.name);
         UnpackKits(scene);
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            foreach (var slot in root.GetComponentsInChildren<Enigma.Inventory.InventorySlotView>(true))
+                slot.EnsureParts();
+            foreach (var inv in root.GetComponentsInChildren<Enigma.Inventory.InventoryUI>(true))
+            {
+                var inspect = inv.GetComponent<Enigma.UI.ItemInspectUI>();
+                if (inspect == null)
+                    inspect = inv.gameObject.AddComponent<Enigma.UI.ItemInspectUI>();
+                var so = new SerializedObject(inv);
+                so.FindProperty("inspectUi").objectReferenceValue = inspect;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+            foreach (var inspect in root.GetComponentsInChildren<Enigma.UI.ItemInspectUI>(true))
+            {
+                inspect.EnsureBlur();
+                EditorUtility.SetDirty(inspect);
+            }
+            foreach (var orbit in root.GetComponentsInChildren<Enigma.CameraSystem.ThirdPersonCamera>(true))
+            {
+                var director = orbit.GetComponent<Enigma.Cinematics.CinematicDirector>();
+                if (director == null)
+                    director = orbit.gameObject.AddComponent<Enigma.Cinematics.CinematicDirector>();
+                director.EnsureRig();
+                EditorUtility.SetDirty(director);
+            }
+        }
+        if (scene.name == "Level02_Lab")
+            BakeLabSystems(scene);
+        ApplyTheme(scene);
         EditorSceneManager.MarkSceneDirty(scene);
         return true;
+    }
+
+    private static bool ThemeScene(Scene scene)
+    {
+        ApplyTheme(scene);
+        EditorSceneManager.MarkSceneDirty(scene);
+        return true;
+    }
+
+    private static void ApplyTheme(Scene scene)
+    {
+        var theme = LoadTheme();
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            foreach (var canvas in root.GetComponentsInChildren<Canvas>(true))
+            {
+                bool nested = canvas.transform.parent != null && canvas.transform.parent.GetComponentInParent<Canvas>(true) != null;
+                if (!nested && canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                    theme.Apply(canvas);
+            }
+            foreach (var prompt in root.GetComponentsInChildren<Enigma.UI.InteractionPromptUI>(true))
+                prompt.SetKeyColor(theme.accentColor);
+        }
+        PanelsBelowFade(scene);
+    }
+
+    // Las ventanas quedan debajo del fundido para que el negro las tape; el fin va encima a propósito
+    private static void PanelsBelowFade(Scene scene)
+    {
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            foreach (var fade in root.GetComponentsInChildren<Enigma.UI.ScreenFade>(true))
+            {
+                var parent = fade.transform.parent;
+                if (parent == null)
+                    continue;
+                for (int i = fade.transform.GetSiblingIndex() + 1; i < parent.childCount; i++)
+                {
+                    var t = parent.GetChild(i);
+                    bool window = (t.name.EndsWith("Panel") || t.name == "NotebookFolders") && t.name != "EndPanel";
+                    if (window)
+                        t.SetSiblingIndex(fade.transform.GetSiblingIndex());
+                }
+            }
+        }
+    }
+
+    private static Enigma.UI.UiTheme LoadTheme()
+    {
+        var theme = AssetDatabase.LoadAssetAtPath<Enigma.UI.UiTheme>(ThemePath);
+        if (theme != null)
+            return theme;
+        theme = ScriptableObject.CreateInstance<Enigma.UI.UiTheme>();
+        theme.titleFont = AssetDatabase.LoadAssetAtPath<Font>(TitleFontPath);
+        theme.bodyFont = AssetDatabase.LoadAssetAtPath<Font>(BodyFontPath);
+        if (!AssetDatabase.IsValidFolder("Assets/ScriptableObjects/UI"))
+            AssetDatabase.CreateFolder("Assets/ScriptableObjects", "UI");
+        AssetDatabase.CreateAsset(theme, ThemePath);
+        AssetDatabase.SaveAssets();
+        return theme;
+    }
+
+    private static void BakeLabSystems(Scene scene)
+    {
+        Enigma.AI.LabSystems systems = null;
+        Transform player = null;
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            if (systems == null)
+                systems = root.GetComponentInChildren<Enigma.AI.LabSystems>(true);
+            foreach (var t in root.GetComponentsInChildren<Transform>(true))
+                if (player == null && t.CompareTag("Player"))
+                    player = t;
+        }
+        if (systems == null)
+        {
+            var go = new GameObject("LevelSystems");
+            SceneManager.MoveGameObjectToScene(go, scene);
+            systems = go.AddComponent<Enigma.AI.LabSystems>();
+        }
+        systems.BuildWatcher(player, Resources.Load<Material>("Mats/Mat_Steel"), Resources.Load<Material>("Mats/Mat_Rubber"));
+        SaveNavMesh(scene, systems.BuildSurface());
+        EditorUtility.SetDirty(systems);
+    }
+
+    // Los datos del NavMesh viven en un asset junto a la escena; se reescribe el mismo para no cambiar de GUID
+    private static void SaveNavMesh(Scene scene, NavMeshSurface surface)
+    {
+        var data = surface.navMeshData;
+        if (data == null)
+            return;
+        string parent = System.IO.Path.GetDirectoryName(scene.path).Replace('\\', '/');
+        string folder = parent + "/" + scene.name;
+        if (!AssetDatabase.IsValidFolder(folder))
+            AssetDatabase.CreateFolder(parent, scene.name);
+        string path = folder + "/NavMesh-" + surface.name + ".asset";
+        var saved = AssetDatabase.LoadAssetAtPath<NavMeshData>(path);
+        if (saved == null)
+        {
+            AssetDatabase.CreateAsset(data, path);
+        }
+        else
+        {
+            EditorUtility.CopySerialized(data, saved);
+            surface.RemoveData();
+            surface.navMeshData = saved;
+            surface.AddData();
+            EditorUtility.SetDirty(saved);
+        }
+        EditorUtility.SetDirty(surface);
+        AssetDatabase.SaveAssets();
     }
 
     private static void ClearOld(Scene scene, KitbashDressing dressing)
@@ -224,7 +485,8 @@ public static class KitbashBaker
                 if (root != null)
                     PrefabUtility.UnpackPrefabInstance(root, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
             }
-            if (go.name.IndexOf("ExitPad") < 0)
+            // Los _Solid son los bloqueos armados por el vestido: quedan grabados
+            if (go.name.IndexOf("ExitPad") < 0 && !go.name.EndsWith("_Solid"))
                 KitbashDressing.StripColliders(go);
         }
     }

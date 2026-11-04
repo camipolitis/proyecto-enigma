@@ -16,7 +16,7 @@ MonoBehaviour:
   requiredFlagId: reel_loaded
   successFlagId: 
   requiredItem: {fileID: 0}
-  failDialogueId: seq_fail
+  failDialogueId: panel_need
   successDialogueId: 
   requiresZoom: 0
   allowsInventoryWhileZoom: 0

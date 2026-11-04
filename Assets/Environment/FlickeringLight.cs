@@ -14,6 +14,12 @@ namespace Enigma.Environment
         private Light _light;
         private float _seed;
 
+        public void Configure(float intensity, float amplitude)
+        {
+            baseIntensity = intensity;
+            flickerAmplitude = amplitude;
+        }
+
         private void Awake()
         {
             _light = GetComponent<Light>();

@@ -309,22 +309,15 @@ namespace Enigma.UI
             }
         }
 
+        // Solo se gastan las hojas del inventario; las que siguen en la impresora quedan
         private void ConsumePrintSheets()
         {
             var inv = InventorySystem.Instance;
-            if (inv != null)
-            {
-                inv.RemoveById("print_10");
-                inv.RemoveById("print_109");
-                inv.RemoveById("print_3");
-            }
-
-            if (sheetOrigen != null)
-                sheetOrigen.SetActive(false);
-            if (sheetSubjects != null)
-                sheetSubjects.SetActive(false);
-            if (sheetStaff != null)
-                sheetStaff.SetActive(false);
+            if (inv == null)
+                return;
+            inv.RemoveById("print_10");
+            inv.RemoveById("print_109");
+            inv.RemoveById("print_3");
         }
     }
 }

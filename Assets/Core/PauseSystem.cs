@@ -75,6 +75,7 @@ namespace Enigma.Core
 
             if (pausePanel != null)
                 pausePanel.SetActive(true);
+            ModalStack.Instance?.Open(pausePanel);
 
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
@@ -87,11 +88,13 @@ namespace Enigma.Core
 
             IsPaused = false;
             Time.timeScale = 1f;
-            ModalStack.Instance?.TryPopSpecific(ModalKind.Pause);
+            // Memorias (y lo que se abrió desde ahí) está arriba de la pausa: se cierra primero
+            journalUi?.CloseList();
+            ModalStack.Instance?.TryRemove(ModalKind.Pause);
+            ModalStack.Instance?.Close(pausePanel);
 
             if (pausePanel != null)
                 pausePanel.SetActive(false);
-            journalUi?.CloseList();
 
             MusicPlayer.Instance?.RestoreSceneMusic();
             AmbientDirector.Instance?.SetPaused(false);
@@ -118,10 +121,11 @@ namespace Enigma.Core
             if (IsPaused)
             {
                 IsPaused = false;
-                ModalStack.Instance?.TryPopSpecific(ModalKind.Pause);
+                journalUi?.CloseList();
+                ModalStack.Instance?.TryRemove(ModalKind.Pause);
+                ModalStack.Instance?.Close(pausePanel);
                 if (pausePanel != null)
                     pausePanel.SetActive(false);
-                journalUi?.CloseList();
             }
 
             IsDefeated = true;

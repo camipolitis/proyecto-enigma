@@ -36,6 +36,7 @@ namespace Enigma.CameraSystem
         private ThirdPersonController _move;
 
         public Transform FollowTarget => followTarget;
+        public bool OrbitEnabled => _orbitEnabled;
 
         private void Awake()
         {
@@ -140,6 +141,15 @@ namespace Enigma.CameraSystem
             float want = crouch ? CrouchDip : 0f;
             _crouchDip = Mathf.Lerp(_crouchDip, want, 10f * Time.deltaTime);
 
+            Pose pose = DesiredPose();
+            transform.SetPositionAndRotation(pose.position, pose.rotation);
+        }
+
+        // Dónde quedaría la cámara con el ángulo y la distancia actuales
+        public Pose DesiredPose()
+        {
+            if (followTarget == null)
+                return new Pose(transform.position, transform.rotation);
             Quaternion rotation = Quaternion.Euler(_pitch, _yaw, 0f);
             Vector3 targetPos = followTarget.position + Vector3.up * (heightOffset - _crouchDip);
             Vector3 desired = targetPos - rotation * Vector3.forward * distance;
@@ -151,8 +161,7 @@ namespace Enigma.CameraSystem
                 // Acerca la cámara si hay pared en medio
             }
 
-            transform.position = desired;
-            transform.rotation = rotation;
+            return new Pose(desired, rotation);
         }
 
         public void SetOrbitEnabled(bool enabled)

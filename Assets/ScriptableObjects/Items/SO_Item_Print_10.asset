@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.InventoryItem
   id: print_10
   displayName: 10
-  icon: {fileID: 0}
-  description: "10"
+  icon: {fileID: 21300000, guid: b6a445b6472e03545ad9e146b29f1666, type: 3}
+  description: 10
   inspectDoc: {fileID: 11400000, guid: c1e5a13d6f0b44a2bd3e8f7a0c6d5423, type: 2}

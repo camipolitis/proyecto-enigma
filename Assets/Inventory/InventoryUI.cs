@@ -21,6 +21,8 @@ namespace Enigma.Inventory
         [SerializeField] private DocumentReaderUI readerUi;
         [SerializeField] private ItemInspectUI inspectUi;
 
+        public RectTransform HotbarRect => (panelRoot != null ? panelRoot.transform : transform) as RectTransform;
+
         private void OnEnable()
         {
             if (inventory != null)

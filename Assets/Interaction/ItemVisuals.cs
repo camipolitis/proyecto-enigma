@@ -6,8 +6,16 @@ namespace Enigma.Interaction
     // Modelo de cada ítem: el mismo en el mundo y en la inspección del inventario.
     public static class ItemVisuals
     {
-        static Shader _lit;
         static Font _font;
+        static readonly System.Collections.Generic.Dictionary<Font, Material> _textMats = new System.Collections.Generic.Dictionary<Font, Material>();
+
+        // Medida mayor en el mundo, cuando difiere de la de inspección (la hoja impresa es A4)
+        public static float WorldSizeOf(string id)
+        {
+            if (id != null && id.StartsWith("print_"))
+                return 0.297f;
+            return SizeOf(id);
+        }
 
         // Medida mayor del objeto en metros
         public static float SizeOf(string id)
@@ -17,7 +25,7 @@ namespace Enigma.Interaction
             if (id == "override_key")
                 return 0.13f;
             if (id == "credential")
-                return 0.12f;
+                return 0.0856f;
             if (id == "battery")
                 return 0.34f;
             if (id == "fuse")
@@ -26,23 +34,25 @@ namespace Enigma.Interaction
                 return 0.2f;
             if (id.StartsWith("print_"))
                 return 0.5f;
+            if (id == "painting")
+                return 0.6f;
             return 0.3f;
         }
 
         public static bool HasCustom(string id)
         {
             return id == "override_key" || id == "battery" || id == "tape" || id == "fuse"
-                || id == "credential" || (id != null && id.StartsWith("print_"));
+                || id == "credential" || id == "painting" || (id != null && id.StartsWith("print_"));
         }
 
         // Devuelve el modelo centrado en el origen, sin colliders, con la medida de SizeOf
-        public static GameObject Build(string id, string label = null)
+        public static GameObject Build(string id, string label = null, float size = 0f)
         {
             GameObject go;
             if (id == "override_key")
                 go = Kit("Key4");
             else if (id == "credential")
-                go = Kit("Pickup_KeyCard");
+                go = Kit("Pickup_CredentialCard");
             else if (id == "battery")
                 go = Kit("Battery");
             else if (id == "tape")
@@ -51,14 +61,29 @@ namespace Enigma.Interaction
                 go = Fuse();
             else if (id != null && id.StartsWith("print_"))
                 go = Print(label ?? id.Substring(6));
+            else if (id == "painting")
+                go = Painting();
             else
                 go = Kit("UI_Paper");
             if (go == null)
                 return null;
             go.name = "Visual_" + id;
             Strip(go);
-            Fit(go, SizeOf(id));
+            Fit(go, size > 0.0001f ? size : SizeOf(id));
             return go;
+        }
+
+        // En Play el texto de los modelos grabados pasa al material que respeta la profundidad
+        public static void WorldText(GameObject root)
+        {
+            if (root == null || !Application.isPlaying)
+                return;
+            foreach (var tm in root.GetComponentsInChildren<TextMesh>(true))
+            {
+                var mr = tm.GetComponent<MeshRenderer>();
+                if (tm.font != null && mr != null)
+                    mr.sharedMaterial = TextMat(tm.font);
+            }
         }
 
         // Reemplaza el placeholder de un pickup por su modelo, manteniendo el área de interacción
@@ -86,14 +111,17 @@ namespace Enigma.Interaction
                 if (c.name.StartsWith("Kit_"))
                 {
                     c.gameObject.SetActive(false);
-                    Object.Destroy(c.gameObject);
+                    if (Application.isPlaying)
+                        Object.Destroy(c.gameObject);
+                    else
+                        Object.DestroyImmediate(c.gameObject);
                 }
             }
             var own = pickup.GetComponent<MeshRenderer>();
             if (own != null)
                 own.enabled = false;
 
-            var vis = Build(id);
+            var vis = Build(id, null, WorldSizeOf(id));
             if (vis == null)
             {
                 if (own != null)
@@ -125,9 +153,9 @@ namespace Enigma.Interaction
         static GameObject Reel()
         {
             var root = new GameObject();
-            var metal = Mat(new Color(0.55f, 0.56f, 0.58f), 0.85f, 0.55f);
-            var tape = Mat(new Color(0.16f, 0.1f, 0.07f), 0.1f, 0.75f);
-            var hub = Mat(new Color(0.12f, 0.12f, 0.12f), 0.3f, 0.4f);
+            var metal = Mat("Mat_Steel");
+            var tape = Mat("Mat_ReelTape");
+            var hub = Mat("Mat_Rubber");
             Part(root, PrimitiveType.Cylinder, new Vector3(0f, 0.012f, 0f), new Vector3(0.2f, 0.0015f, 0.2f), metal);
             Part(root, PrimitiveType.Cylinder, new Vector3(0f, -0.012f, 0f), new Vector3(0.2f, 0.0015f, 0.2f), metal);
             Part(root, PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.15f, 0.011f, 0.15f), tape);
@@ -147,10 +175,8 @@ namespace Enigma.Interaction
         static GameObject Fuse()
         {
             var root = new GameObject();
-            var glass = Mat(new Color(0.18f, 1f, 0.22f, 1f), 0f, 0.9f);
-            glass.EnableKeyword("_EMISSION");
-            glass.SetColor("_EmissionColor", new Color(0.1f, 0.9f, 0.15f) * 1.5f);
-            var metal = Mat(new Color(0.75f, 0.75f, 0.72f), 0.9f, 0.6f);
+            var glass = Resources.Load<Material>("Mats/Mat_FuseGlass");
+            var metal = Resources.Load<Material>("Mats/Mat_FuseCap");
             var body = Part(root, PrimitiveType.Cylinder, Vector3.zero, new Vector3(0.022f, 0.035f, 0.022f), glass);
             body.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
             var capA = Part(root, PrimitiveType.Cylinder, new Vector3(0.042f, 0f, 0f), new Vector3(0.025f, 0.012f, 0.025f), metal);
@@ -163,7 +189,7 @@ namespace Enigma.Interaction
         static GameObject Print(string number)
         {
             var root = new GameObject();
-            var paper = Mat(new Color(0.95f, 0.92f, 0.82f), 0f, 0.15f);
+            var paper = Mat("Mat_PrintPaper");
             Part(root, PrimitiveType.Cube, Vector3.zero, new Vector3(0.21f, 0.002f, 0.29f), paper);
 
             if (_font == null)
@@ -178,14 +204,80 @@ namespace Enigma.Interaction
             tm.text = number;
             tm.font = _font;
             tm.fontSize = 96;
-            tm.characterSize = 0.012f;
+            tm.characterSize = 0.009f;
             tm.anchor = TextAnchor.MiddleCenter;
             tm.alignment = TextAlignment.Center;
             tm.color = new Color(0.72f, 0.08f, 0.06f, 1f);
             var mr = txt.GetComponent<MeshRenderer>();
-            mr.sharedMaterial = _font.material;
+            mr.sharedMaterial = FontMat(_font);
             mr.shadowCastingMode = ShadowCastingMode.Off;
             return root;
+        }
+
+        // Frente: la pintura. Dorso: papel madera con la nota de Panizza, se lee al girar
+        static GameObject Painting()
+        {
+            var root = new GameObject();
+            // Proporción del óleo original (244 x 183 cm): la textura se importa cuadrada
+            float w = 1f;
+            float h = 0.75f;
+            const float t = 0.04f;
+            const float bar = 0.06f;
+
+            var wood = Mat("Mat_FrameWood");
+            Part(root, PrimitiveType.Cube, new Vector3(0f, h * 0.5f + bar * 0.5f, 0f), new Vector3(w + bar * 2f, bar, t), wood);
+            Part(root, PrimitiveType.Cube, new Vector3(0f, -h * 0.5f - bar * 0.5f, 0f), new Vector3(w + bar * 2f, bar, t), wood);
+            Part(root, PrimitiveType.Cube, new Vector3(w * 0.5f + bar * 0.5f, 0f, 0f), new Vector3(bar, h, t), wood);
+            Part(root, PrimitiveType.Cube, new Vector3(-w * 0.5f - bar * 0.5f, 0f, 0f), new Vector3(bar, h, t), wood);
+
+            Part(root, PrimitiveType.Quad, new Vector3(0f, 0f, -t * 0.25f), new Vector3(w, h, 1f), Mat("Mat_Canvas"));
+
+            var back = Part(root, PrimitiveType.Quad, new Vector3(0f, 0f, t * 0.25f), new Vector3(w, h, 1f), Mat("Mat_Kraft"));
+            back.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+
+            if (_font == null)
+                _font = Resources.Load<Font>("Fonts/SegoeScript");
+            if (_font == null)
+                _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var txt = new GameObject("Painting_Note");
+            txt.transform.SetParent(root.transform, false);
+            txt.transform.localPosition = new Vector3(0f, 0.04f, t * 0.25f + 0.002f);
+            txt.transform.localRotation = Quaternion.Euler(0f, 180f, -4f);
+            var tm = txt.AddComponent<TextMesh>();
+            tm.text = "Lo que hoy se susurra en este cuarto\nmañana lo oirán todas las banderas.\n"
+                + "Querrán torcer el tiempo a su favor\ny el cielo, sempiterno, guardará la ceniza;\n"
+                + "cada ciudad será un cadáver que todavía respira.\n"
+                + "No es pigricia lo que me detiene:\nes saber que ya empezó.\n\n— Panizza";
+            tm.font = _font;
+            tm.fontSize = 64;
+            tm.characterSize = 0.0052f;
+            tm.lineSpacing = 0.95f;
+            tm.anchor = TextAnchor.MiddleCenter;
+            tm.alignment = TextAlignment.Center;
+            tm.color = new Color(0.97f, 0.93f, 0.82f, 1f);
+            var mr = txt.GetComponent<MeshRenderer>();
+            mr.sharedMaterial = FontMat(_font);
+            mr.shadowCastingMode = ShadowCastingMode.Off;
+            return root;
+        }
+
+        // Fuera de Play queda el material de la fuente (no se embebe nada en la escena)
+        static Material FontMat(Font font)
+        {
+            return Application.isPlaying ? TextMat(font) : font.material;
+        }
+
+        // Material de TextMesh que queda tapado por lo que tenga delante
+        public static Material TextMat(Font font)
+        {
+            if (_textMats.TryGetValue(font, out var cached) && cached != null)
+                return cached;
+            var shader = Shader.Find("Enigma/WorldText");
+            if (shader == null)
+                return font.material;
+            var mat = new Material(shader) { mainTexture = font.material.mainTexture };
+            _textMats[font] = mat;
+            return mat;
         }
 
         static GameObject Part(GameObject root, PrimitiveType type, Vector3 pos, Vector3 scale, Material mat)
@@ -198,27 +290,17 @@ namespace Enigma.Interaction
             return p;
         }
 
-        static Material Mat(Color c, float metallic, float smooth)
-        {
-            if (_lit == null)
-                _lit = Shader.Find("Universal Render Pipeline/Lit");
-            var m = new Material(_lit != null ? _lit : Shader.Find("Standard"));
-            m.color = c;
-            if (m.HasProperty("_BaseColor"))
-                m.SetColor("_BaseColor", c);
-            if (m.HasProperty("_Metallic"))
-                m.SetFloat("_Metallic", metallic);
-            if (m.HasProperty("_Smoothness"))
-                m.SetFloat("_Smoothness", smooth);
-            return m;
-        }
+        static Material Mat(string name) => Resources.Load<Material>("Mats/" + name);
 
         static void Strip(GameObject go)
         {
             foreach (var c in go.GetComponentsInChildren<Collider>(true))
             {
                 c.enabled = false;
-                Object.Destroy(c);
+                if (Application.isPlaying)
+                    Object.Destroy(c);
+                else
+                    Object.DestroyImmediate(c);
             }
         }
 

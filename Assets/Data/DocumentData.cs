@@ -29,7 +29,13 @@ namespace Enigma.Data
         public AudioClip openVoice;
         // Clip al abrir (cassette). Vacío = solo texto.
 
+        public bool audioOnly;
+        // Grabación: no abre hoja; suena openVoice y el body va como subtítulo.
+
         public bool tensionOnRead;
         // Notas ORIGEN: al abrir entra tensión; al cerrar con Q vuelve la base.
+
+        public string cornerLetter;
+        // Letra en rojo, circulada, abajo a la derecha de la hoja (expedientes).
     }
 }
