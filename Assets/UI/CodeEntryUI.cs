@@ -26,12 +26,14 @@ namespace Enigma.UI
 
         private string _buffer = string.Empty;
         private Action _onSuccess;
+        private Action _onFail;
         private float _armedAt;
 
         protected override ModalKind Kind => ModalKind.CodeEntry;
         protected override GameObject ModalRoot => root;
         protected override PlayerInputHandler Input => input;
 
+        public bool Showing => IsOpen;
         private bool IsTop => ModalStack.Instance == null || ModalStack.Instance.IsTop(ModalKind.CodeEntry);
         private bool Armed => Time.unscaledTime >= _armedAt;
 
@@ -68,6 +70,13 @@ namespace Enigma.UI
 
         public void Open()
         {
+            Open(null);
+        }
+
+        // onFail: el objeto del mundo reacciona a cada código incorrecto
+        public void Open(Action onFail)
+        {
+            _onFail = onFail;
             _buffer = string.Empty;
             _armedAt = Time.unscaledTime + 0.25f;
             RefreshDisplay();
@@ -160,6 +169,7 @@ namespace Enigma.UI
                 RefreshDisplay();
                 Enigma.Audio.SfxPlayer.Instance?.Play("password_error");
                 PlayFailLine();
+                _onFail?.Invoke();
             }
         }
 

@@ -9,6 +9,12 @@ namespace Enigma.Environment
         [SerializeField] private GameObject target;
         [SerializeField] private string flagId;
 
+        public void Configure(GameObject toggled, string flag)
+        {
+            target = toggled;
+            flagId = flag;
+        }
+
         private void OnEnable()
         {
             if (GameFlagSystem.Instance != null)

@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace Enigma.Sequences
 {
-    // Intro: subtítulo → "Presioná E" → Exploring.
+    // Intro: fundido → "Presioná E" → levantarse → subtítulo → Exploring.
     public class IntroSequence : MonoBehaviour
     {
         [SerializeField] private IntroSequenceConfig config;
@@ -20,9 +20,13 @@ namespace Enigma.Sequences
         [SerializeField] private SubtitleSystem subtitles;
         [SerializeField] private GameObject standPromptRoot;
         [SerializeField] private Text standPromptLabel;
+        [SerializeField] private ScreenFade screenFade;
+        [SerializeField] private float openingFade = 3f;
 
         private void Start()
         {
+            if (screenFade != null)
+                screenFade.SetBlack();
             StartCoroutine(Run());
         }
 
@@ -31,25 +35,11 @@ namespace Enigma.Sequences
             input?.SetGameplayInputEnabled(false);
             state?.SetState(PlayerGameplayState.Prone);
             controller?.SetProneVisual(true);
+            Coroutine fade = screenFade != null ? StartCoroutine(screenFade.FadeFromBlack(openingFade)) : null;
             yield return CinematicDirector.PlayIntro(controller != null ? controller.transform : null);
-
-            if (standPromptRoot != null)
-                standPromptRoot.SetActive(false);
-
-            string opening = config != null ? config.openingSubtitle : "¿Dónde estoy? ...¿Qué pasó?";
-            float duration = config != null ? config.openingSubtitleDuration : 3f;
-            if (dialogue != null && dialogue.TryGet(openingDialogueId, out var line))
-            {
-                opening = line.text;
-                duration = line.duration;
-                if (line.voice != null && line.voice.length > duration)
-                    duration = line.voice.length;
-                subtitles?.Show(line.text, line.duration, line.voice);
-            }
-            else
-                subtitles?.Show(opening, duration);
-
-            yield return new WaitForSecondsRealtime(duration);
+            // El aviso no sale sobre la pantalla todavía oscura
+            if (fade != null)
+                yield return fade;
 
             if (standPromptLabel != null)
                 standPromptLabel.text = config != null ? config.standPrompt : "Presioná E para levantarte";
@@ -87,6 +77,13 @@ namespace Enigma.Sequences
             controller?.SetProneVisual(false);
             state?.SetState(PlayerGameplayState.Exploring);
             input?.SetGameplayInputEnabled(true);
+
+            // Ya de pie, recién ahí la primera frase
+            if (dialogue != null && dialogue.TryGet(openingDialogueId, out var line))
+                subtitles?.Show(line.text, line.duration, line.voice);
+            else
+                subtitles?.Show(config != null ? config.openingSubtitle : "¿Dónde estoy? ...¿Qué pasó?",
+                    config != null ? config.openingSubtitleDuration : 3f);
         }
     }
 }

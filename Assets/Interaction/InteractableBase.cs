@@ -2,6 +2,7 @@ using Enigma.Audio;
 using Enigma.CameraSystem;
 using Enigma.Core;
 using Enigma.Data;
+using Enigma.Environment;
 using Enigma.UI;
 using UnityEngine;
 
@@ -15,14 +16,24 @@ namespace Enigma.Interaction
         [SerializeField] protected Transform zoomAnchor;
         [SerializeField] private float interactRange;
         // 0 = usa el range del detector.
+        [SerializeField] private GameObject completeFx;
+        [SerializeField] private Transform completeFxAnchor;
+        [SerializeField] private float completeFxLife = 6f;
+        // Efecto cuando la E lo resuelve. Sin anchor sale del piso, bajo el objeto.
 
         private bool _localCompleted;
 
         public float InteractRange => interactRange;
+        public InteractableConfig Config => config;
 
         public virtual bool RequiresZoom => config != null && config.requiresZoom;
         public virtual bool AllowsInventoryWhileZoom => config != null && config.allowsInventoryWhileZoom;
         public virtual Transform ZoomAnchor => zoomAnchor != null ? zoomAnchor : transform;
+
+        protected void AnchorCompleteFx(Transform anchor)
+        {
+            completeFxAnchor = anchor;
+        }
 
         public virtual string GetPrompt(InteractContext context)
         {
@@ -59,6 +70,27 @@ namespace Enigma.Interaction
                 OnSuccess(context);
             else
                 OnFail(context);
+            if (IsCompleted())
+                SpawnCompleteFx();
+        }
+
+        private void SpawnCompleteFx()
+        {
+            if (completeFx == null)
+                return;
+            Vector3 at;
+            if (completeFxAnchor != null)
+                at = completeFxAnchor.position;
+            else
+            {
+                var b = new Bounds(transform.position, Vector3.zero);
+                foreach (var r in GetComponentsInChildren<Renderer>())
+                    b.Encapsulate(r.bounds);
+                at = new Vector3(b.center.x, b.min.y, b.center.z);
+            }
+            var fx = Instantiate(completeFx, at, Quaternion.identity);
+            if (completeFxLife > 0f)
+                Destroy(fx, completeFxLife);
         }
 
         protected virtual bool IsCompleted()
@@ -102,6 +134,7 @@ namespace Enigma.Interaction
 
         protected virtual void OnSuccess(InteractContext context)
         {
+            StopAttempt();
             if (config != null && !string.IsNullOrEmpty(config.successFlagId))
                 GameFlagSystem.Instance?.Set(config.successFlagId, true);
 
@@ -118,6 +151,19 @@ namespace Enigma.Interaction
                 SfxPlayer.Instance?.Play("door_locked", transform.position);
             PlayDialogue(context, config != null ? config.failDialogueId : null);
             HandleFailExtra(context);
+            PlayAttempt();
+        }
+
+        protected void PlayAttempt()
+        {
+            foreach (var m in GetComponents<AttemptMotion>())
+                m.Play();
+        }
+
+        protected void StopAttempt()
+        {
+            foreach (var m in GetComponents<AttemptMotion>())
+                m.Stop(true);
         }
 
         protected void PlayDialogue(InteractContext context, string dialogueId)

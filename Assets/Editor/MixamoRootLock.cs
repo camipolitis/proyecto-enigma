@@ -4,6 +4,21 @@ using UnityEngine;
 // Mixamo: bake root en pose para que el loop no desplace ni haga rollback.
 public class MixamoRootLock : AssetPostprocessor
 {
+    public override uint GetVersion()
+    {
+        return 1;
+    }
+
+    // MixamoPlayerVisual mide la pose con BakeMesh: en el build la malla tiene que ser legible
+    private void OnPreprocessModel()
+    {
+        if (assetPath.IndexOf("Resources/Mixamo/Megan") < 0)
+            return;
+        var importer = assetImporter as ModelImporter;
+        if (importer != null)
+            importer.isReadable = true;
+    }
+
     private void OnPreprocessAnimation()
     {
         if (assetPath.IndexOf("Resources/Mixamo") < 0)

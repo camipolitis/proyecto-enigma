@@ -7,30 +7,7 @@ namespace Enigma.Core
     // Carga de escenas por nombre (Build Settings).
     public class SceneLoader : MonoBehaviour
     {
-        static bool _firstSceneHandled;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetBoot()
-        {
-            _firstSceneHandled = false;
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void BootOnMenu()
-        {
-            // Primera carga de la sesión: si no es el menú, lo abrimos.
-            if (_firstSceneHandled)
-                return;
-            _firstSceneHandled = true;
-
-            var scene = SceneManager.GetActiveScene();
-            if (scene.name == "MainMenu" || scene.name.StartsWith("InitTestScene"))
-                return;
-            // La escena del Test Runner debe seguir viva para que corran los tests
-
-            SceneManager.LoadScene("MainMenu");
-        }
-
+        // El arranque desde el menú en el Editor lo decide PlayFromBuildSettings (menú Enigma)
         public void LoadSceneByName(string sceneName)
         {
             if (string.IsNullOrEmpty(sceneName))

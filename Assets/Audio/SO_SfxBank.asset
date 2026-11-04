@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SO_SfxBank
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Audio.SfxBank
   entries:
-  - id: SFX_ui_click
+  - id: ui_click
     clips:
     - {fileID: 8300000, guid: 82e748fd3799db24aaf3601db6cd7f2b, type: 3}
     - {fileID: 8300000, guid: 09f75233d25562f44ba70fbf491200c7, type: 3}
@@ -87,6 +87,20 @@ MonoBehaviour:
     spatialBlend: 1
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: item_place
+    clips:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    spatialBlend: 1
+    mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
+  - id: debris_land
+    clips:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    spatialBlend: 1
+    mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
+  - id: padlock_drop
     clips:
     - {fileID: 0}
     - {fileID: 0}

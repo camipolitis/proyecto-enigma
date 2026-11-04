@@ -82,8 +82,8 @@ namespace Enigma.Player
             }
 
             if (_controller.isGrounded && _verticalVelocity < 0f)
-                _verticalVelocity = -2f;
-            // Mantiene contacto con el suelo 
+                _verticalVelocity = -Mathf.Max(2f, speed * move.magnitude * Mathf.Tan(_controller.slopeLimit * Mathf.Deg2Rad));
+            // Mantiene contacto con el suelo, también bajando a la carrera la pendiente más empinada que se camina
 
             if (input.JumpPressed && _controller.isGrounded && !_isCrouching)
                 _verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);

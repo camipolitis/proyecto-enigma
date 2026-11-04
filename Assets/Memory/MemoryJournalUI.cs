@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Enigma.Core;
 using Enigma.Data;
 using Enigma.UI;
 using UnityEngine;
@@ -56,18 +57,27 @@ namespace Enigma.Memory
                 toastRoot.SetActive(false);
         }
 
+        // Entra a la pila como cualquier ventana: Q la cierra desde PauseUI y se dibuja sobre la pausa
         public void OpenList()
         {
             BindJournal();
             if (listPanel != null)
                 listPanel.SetActive(true);
+            ModalStack.Instance?.Push(ModalKind.Memories);
+            ModalStack.Instance?.Open(listPanel);
+            ModalStack.Instance?.ApplyCursorForTop();
             RebuildList();
         }
 
         public void CloseList()
         {
+            if (documentReader != null && documentReader.FromJournal)
+                documentReader.Close();
             if (listPanel != null)
                 listPanel.SetActive(false);
+            ModalStack.Instance?.TryRemove(ModalKind.Memories);
+            ModalStack.Instance?.Close(listPanel);
+            ModalStack.Instance?.ApplyCursorForTop();
         }
 
         private void BindJournal()

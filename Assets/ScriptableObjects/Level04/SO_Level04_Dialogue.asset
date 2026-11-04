@@ -41,6 +41,10 @@ MonoBehaviour:
     text: No...
     duration: 2.5
     voice: {fileID: 0}
+  - id: panel_need
+    text: "Sin la proyecci\xF3n no tiene sentido..."
+    duration: 2.5
+    voice: {fileID: 0}
   - id: key_pickup
     text: Una llave...
     duration: 2.5

@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.InventoryItem
   id: fuse
   displayName: Fusible
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ad2f50d15389e7f4aae67c366415cccf, type: 3}
   description: "Fusible de la caja el\xE9ctrica."
   inspectDoc: {fileID: 0}

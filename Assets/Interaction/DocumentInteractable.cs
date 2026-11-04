@@ -26,6 +26,14 @@ namespace Enigma.Interaction
             if (readerUi == null)
                 return;
 
+            if (document.audioOnly)
+            {
+                if (config != null && !string.IsNullOrEmpty(config.successFlagId))
+                    Enigma.Core.GameFlagSystem.Instance?.Set(config.successFlagId, true);
+                readerUi.Listen(document);
+                return;
+            }
+
             if (RequiresZoom && InteractionZoomController.Instance != null &&
                 !InteractionZoomController.Instance.IsZooming)
             {

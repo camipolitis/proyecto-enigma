@@ -16,6 +16,25 @@ namespace Enigma.Environment
         [SerializeField] private Kind kind;
         [SerializeField] private float life = 2.2f;
 
+        // Sin material el ParticleSystem se ve como cuadros magenta en URP
+        private static Material _additive;
+        private static Material _alpha;
+
+        private static Material Mat(bool additive)
+        {
+            ref Material slot = ref additive ? ref _additive : ref _alpha;
+            if (slot != null)
+                return slot;
+            var shader = Shader.Find("Enigma/ParticleSoft");
+            if (shader == null)
+                return null;
+            slot = new Material(shader) { name = additive ? "FX_Additive" : "FX_Alpha" };
+            slot.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            slot.SetFloat("_DstBlend", (float)(additive ? UnityEngine.Rendering.BlendMode.One : UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha));
+            slot.SetFloat("_Softness", additive ? 0.45f : 0.85f);
+            return slot;
+        }
+
         public static void Spawn(Kind kind, Vector3 position)
         {
             var go = new GameObject("FX_" + kind);
@@ -77,6 +96,10 @@ namespace Enigma.Environment
                 shape.angle = 12f;
                 life = 2.4f;
             }
+
+            var rend = GetComponent<ParticleSystemRenderer>();
+            if (rend != null)
+                rend.sharedMaterial = Mat(kind == Kind.Spark);
 
             ps.Play();
 

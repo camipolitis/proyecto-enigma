@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa121de79b4a42f47bd59a4d01fbcb6d, type: 3}
+  m_Name: SO_Doc_MezzLog
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
+  id: doc_mezz_log
+  title: "LIBRO DE GUARDIA - DEP\xD3SITO"
+  body: "07:30  Apertura. Im\xE1n apagado. Chapas contadas: tres. - R.\n\n11:15  Ruido
+    en el pasillo norte. Revisado, nada. - R.\n\n16:40  Vuelve a quedar encendido
+    el im\xE1n. Lo apago a mano. - L.\n\n18:55  Ronda sin novedad. - L.\n\n19:04  ----------------------------\n\n20:10
+    \ Nadie pasa al pasillo norte. Orden de arriba. - R.\n "
+  releaseSubtitle: "Esa no la firm\xF3 nadie..."
+  releaseDialogueId: 
+  memoryCollectedMessage: Memoria recolectada
+  viewImage: {fileID: 0}
+  openVoice: {fileID: 0}
+  tensionOnRead: 0
+  cornerLetter: 

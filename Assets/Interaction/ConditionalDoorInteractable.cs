@@ -16,8 +16,11 @@ namespace Enigma.Interaction
 
         [SerializeField] private string fuseInstalledFlagId = "fuse_installed";
         // Si se setea, la luz también prende al colocar el fusible.
-
         private bool _opened;
+
+        public Transform DoorPivot => doorPivot;
+        public float OpenYaw => openYaw;
+        public float SlideX => slideX;
 
         private void OnEnable()
         {

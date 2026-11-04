@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.InventoryItem
   id: tape
   displayName: Cinta
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 1130db035476e8e49868a6c839d224ec, type: 3}
   description: "Bobina de observaci\xF3n."
   inspectDoc: {fileID: 0}

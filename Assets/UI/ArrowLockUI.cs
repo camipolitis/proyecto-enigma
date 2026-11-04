@@ -21,6 +21,7 @@ namespace Enigma.UI
 
         private string _buffer = string.Empty;
         private Button _leftButton;
+        private System.Action _onFail;
 
         protected override ModalKind Kind => ModalKind.ArrowLock;
         protected override GameObject ModalRoot => root;
@@ -30,6 +31,13 @@ namespace Enigma.UI
 
         public void Open()
         {
+            Open(null);
+        }
+
+        // onFail: la tapa reacciona a cada combinación incorrecta
+        public void Open(System.Action onFail)
+        {
+            _onFail = onFail;
             if (root == null)
                 return;
             _buffer = string.Empty;
@@ -113,6 +121,7 @@ namespace Enigma.UI
                 if (dialogue != null && !string.IsNullOrEmpty(failDialogueId) &&
                     dialogue.TryGet(failDialogueId, out var line))
                     subs?.Show(line.text, line.duration, line.voice);
+                _onFail?.Invoke();
             }
         }
 
@@ -125,7 +134,7 @@ namespace Enigma.UI
             for (int i = 0; i < correctCode.Length; i++)
             {
                 if (i < _buffer.Length)
-                    shown.Append(_buffer[i] == 'L' ? "← " : "→ ");
+                    shown.Append(_buffer[i] == 'L' ? "< " : "> ");
                 else
                     shown.Append("_ ");
             }

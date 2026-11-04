@@ -1,4 +1,4 @@
-using Enigma.UI;
+﻿using Enigma.UI;
 using UnityEngine;
 
 namespace Enigma.AI
@@ -20,33 +20,35 @@ namespace Enigma.AI
         [SerializeField] private float alertSeconds = 2.6f;
         [SerializeField] private float cooldownSeconds = 8f;
         [SerializeField] private string alertLine = "La cámara me enfoca...";
+        // La línea no se repite en cada alerta: espera estos segundos
+        [SerializeField] private float lineCooldown = 45f;
 
-        private Transform _player;
-        private Transform _led;
+        [SerializeField] private Transform player;
+        [SerializeField] private Transform led;
+
         private State _state = State.Idle;
         private float _timer;
         private float _cool;
+        private float _lineReadyAt;
         private float _restYaw;
         private float _pan;
         private float _panSign = 1f;
 
-        public void Setup(Transform player, Transform led)
+        public void Setup(Transform target, Transform light)
         {
-            _player = player;
-            _led = led;
+            player = target;
+            led = light;
+        }
+
+        private void Start()
+        {
             _restYaw = transform.eulerAngles.y;
         }
 
         private void Update()
         {
-            if (_player == null)
-            {
-                var go = GameObject.FindGameObjectWithTag("Player");
-                if (go != null)
-                    _player = go.transform;
-                if (_player == null)
-                    return;
-            }
+            if (player == null)
+                return;
 
             if (_cool > 0f)
                 _cool -= Time.deltaTime;
@@ -107,12 +109,15 @@ namespace Enigma.AI
             _state = State.Alert;
             _timer = alertSeconds;
             _cool = cooldownSeconds;
+            if (Time.time < _lineReadyAt)
+                return;
+            _lineReadyAt = Time.time + lineCooldown;
             SubtitleSystem.Instance?.Show(alertLine, alertSeconds);
         }
 
         private void FacePlayer()
         {
-            Vector3 to = _player.position + Vector3.up * 1.1f - transform.position;
+            Vector3 to = player.position + Vector3.up * 1.1f - transform.position;
             if (to.sqrMagnitude < 0.01f)
                 return;
 
@@ -126,7 +131,7 @@ namespace Enigma.AI
 
         private bool InCone()
         {
-            Vector3 to = _player.position + Vector3.up * 1.2f - transform.position;
+            Vector3 to = player.position + Vector3.up * 1.2f - transform.position;
             float dist = to.magnitude;
             if (dist > viewRange || dist < 0.15f)
                 return false;
@@ -136,18 +141,18 @@ namespace Enigma.AI
         private bool HasLineOfSight()
         {
             Vector3 origin = transform.position + transform.forward * 0.12f;
-            Vector3 target = _player.position + Vector3.up * 1.1f;
+            Vector3 target = player.position + Vector3.up * 1.1f;
             Vector3 dir = target - origin;
             if (!Physics.Raycast(origin, dir.normalized, out var hit, dir.magnitude, ~0, QueryTriggerInteraction.Ignore))
                 return false;
-            return hit.transform == _player || hit.transform.IsChildOf(_player);
+            return hit.transform == player || hit.transform.IsChildOf(player);
         }
 
         private void SetLed(bool on)
         {
-            if (_led == null)
+            if (led == null)
                 return;
-            var rend = _led.GetComponent<MeshRenderer>();
+            var rend = led.GetComponent<MeshRenderer>();
             if (rend == null)
                 return;
             Color c = on ? new Color(1f, 0.15f, 0.12f) : new Color(0.35f, 0.05f, 0.05f);

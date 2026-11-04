@@ -10,6 +10,7 @@ namespace Enigma.Core
         public static ModalStack Instance { get; private set; }
 
         private readonly List<ModalKind> _stack = new List<ModalKind>();
+        private readonly List<GameObject> _openRoots = new List<GameObject>();
         
         public event Action OnStackChanged;
         // UI e input se suscriben para saber si el jugador puede moverse.
@@ -88,7 +89,36 @@ namespace Enigma.Core
         public void ClearAll()
         {
             _stack.Clear();
+            _openRoots.Clear();
             OnStackChanged?.Invoke();
+        }
+
+        // El panel que se abre se dibuja encima de los abiertos que comparten su padre.
+        // No sube padres ni mueve paneles con Canvas propio: fundido, fin y hotbar quedan donde están.
+        public void Open(GameObject root)
+        {
+            if (root == null)
+                return;
+            _openRoots.Remove(root);
+            if (root.GetComponent<Canvas>() == null)
+            {
+                var parent = root.transform.parent;
+                int top = -1;
+                for (int i = 0; i < _openRoots.Count; i++)
+                {
+                    var other = _openRoots[i];
+                    if (other != null && other.activeInHierarchy && other.transform.parent == parent)
+                        top = Mathf.Max(top, other.transform.GetSiblingIndex());
+                }
+                if (top > root.transform.GetSiblingIndex())
+                    root.transform.SetSiblingIndex(top);
+            }
+            _openRoots.Add(root);
+        }
+
+        public void Close(GameObject root)
+        {
+            _openRoots.Remove(root);
         }
 
         public bool BlocksGameplay()
@@ -102,7 +132,8 @@ namespace Enigma.Core
             if (Contains(ModalKind.Pause) || Contains(ModalKind.Document) ||
                 Contains(ModalKind.CodeEntry) || Contains(ModalKind.WirePuzzle) ||
                 Contains(ModalKind.WordEntry) || Contains(ModalKind.ArrowLock) ||
-                Contains(ModalKind.Computer) || Contains(ModalKind.ItemInspect))
+                Contains(ModalKind.Computer) || Contains(ModalKind.ItemInspect) ||
+                Contains(ModalKind.Memories))
                 return false;
             // Pause, lectura y puzzles de UI bloquean el inventario
 
@@ -116,7 +147,7 @@ namespace Enigma.Core
                    Contains(ModalKind.CodeEntry) || Contains(ModalKind.WirePuzzle) ||
                    Contains(ModalKind.WordEntry) || Contains(ModalKind.ArrowLock) ||
                    Contains(ModalKind.Computer) || Contains(ModalKind.Inventory) ||
-                   Contains(ModalKind.ItemInspect);
+                   Contains(ModalKind.ItemInspect) || Contains(ModalKind.Memories);
         }
 
         public void ApplyCursorForTop()
@@ -130,7 +161,8 @@ namespace Enigma.Core
                           top == ModalKind.WordEntry ||
                           top == ModalKind.ArrowLock ||
                           top == ModalKind.Computer ||
-                          top == ModalKind.ItemInspect;
+                          top == ModalKind.ItemInspect ||
+                          top == ModalKind.Memories;
             Cursor.lockState = uiOpen ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = uiOpen;
         }

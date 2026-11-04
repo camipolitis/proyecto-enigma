@@ -11,6 +11,10 @@ namespace Enigma.Interaction
         [SerializeField] private GameObject[] enableOnUnlock;
         [SerializeField] private NotebookFolderUI notebookFolders;
 
+        private bool _attemptQueued;
+
+        public string UnlockFlagId => unlockFlagId;
+
         protected override bool IsCompleted()
         {
             if (notebookFolders != null)
@@ -46,7 +50,21 @@ namespace Enigma.Interaction
                 return;
             }
 
-            codeUi.Open();
+            codeUi.Open(QueueAttempt);
+        }
+
+        // El panel tapa el candado: se sacude al cerrarlo, si no se acertó antes
+        private void QueueAttempt()
+        {
+            _attemptQueued = true;
+        }
+
+        private void Update()
+        {
+            if (!_attemptQueued || codeUi == null || codeUi.Showing)
+                return;
+            _attemptQueued = false;
+            PlayAttempt();
         }
 
         private void OnEnable()
@@ -74,6 +92,7 @@ namespace Enigma.Interaction
         {
             if (!value || string.IsNullOrEmpty(unlockFlagId) || id != unlockFlagId)
                 return;
+            _attemptQueued = false;
 
             if (enableOnUnlock != null)
             {

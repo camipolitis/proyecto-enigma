@@ -19,6 +19,9 @@ namespace Enigma.Interaction
 
         private bool _opened;
 
+        public Transform HatchPivot => hatchPivot;
+        public float OpenPitch => openPitch;
+
         private void OnEnable()
         {
             if (GameFlagSystem.Instance != null)
@@ -53,7 +56,7 @@ namespace Enigma.Interaction
 
         protected override void OnSuccess(InteractContext context)
         {
-            lockUi.Open();
+            lockUi.Open(PlayAttempt);
         }
 
         private void OnFlag(string id, bool value)
@@ -72,6 +75,7 @@ namespace Enigma.Interaction
                 subs.Show(line.text, line.duration, line.voice);
             if (hatchPivot != null)
             {
+                AttemptMotion.StopAll(hatchPivot);
                 BurstParticles.Spawn(BurstParticles.Kind.Dust, hatchPivot.position);
                 SfxPlayer.Instance?.Play("hatch", hatchPivot.position);
                 StartCoroutine(OpenHatch());
