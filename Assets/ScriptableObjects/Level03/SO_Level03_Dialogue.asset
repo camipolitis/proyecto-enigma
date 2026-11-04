@@ -16,33 +16,33 @@ MonoBehaviour:
   - id: door_locked
     text: "Est\xE1 bloqueada..."
     duration: 2.5
-    voice: {fileID: 8300000, guid: 24e942fabb67fa24393ee225956068cc, type: 3}
+    voice: {fileID: 8300000, guid: 17a2f4eecf80a53489f9e68c381decf4, type: 3}
   - id: wires_incomplete
     text: "Est\xE1n sueltos..."
     duration: 2.5
-    voice: {fileID: 0}
+    voice: {fileID: 8300000, guid: b1ec57e8b52415a4d9adeefb925ee175, type: 3}
   - id: wires_done
     text: "Funcion\xF3..."
     duration: 2.5
-    voice: {fileID: 8300000, guid: 1c1592a32e9c27440aee3ad3ff84f19b, type: 3}
+    voice: {fileID: 8300000, guid: 48719901b8b892449a743cfacb804f53, type: 3}
   - id: pc_no_power
-    text: "No prende..."
+    text: No prende...
     duration: 2.5
-    voice: {fileID: 0}
+    voice: {fileID: 8300000, guid: ae7ba8aad857e294a97f13c375afd810, type: 3}
   - id: pc_password_fail
-    text: "No..."
+    text: No...
     duration: 2.5
-    voice: {fileID: 0}
+    voice: {fileID: 8300000, guid: d74ff4425b69df94695bf673024e7a0b, type: 3}
   - id: folder_corrupt
-    text: "parece que no puedo acceder..."
+    text: parece que no puedo acceder...
     duration: 2.5
     voice: {fileID: 8300000, guid: 40606dc9590c3ef4da225b4b7e4113fc, type: 3}
   - id: hatch_need
-    text: "M..."
+    text: M...
     duration: 2.5
     voice: {fileID: 8300000, guid: 2cf75e87f58db494d9f9756a6d3910a9, type: 3}
   - id: hatch_wrong
-    text: "No gira..."
+    text: No gira...
     duration: 2.5
     voice: {fileID: 0}
   - id: hatch_open
@@ -50,19 +50,19 @@ MonoBehaviour:
     duration: 2.5
     voice: {fileID: 0}
   - id: magnet_move
-    text: "Se mueve..."
+    text: Se mueve...
     duration: 2.5
     voice: {fileID: 0}
   - id: paint_need
-    text: "No se mueve..."
+    text: No se mueve...
     duration: 2.5
     voice: {fileID: 0}
   - id: credential_pickup
-    text: "Esto puede servir..."
+    text: Esto puede servir...
     duration: 2.5
     voice: {fileID: 8300000, guid: 0573b79e8d9e8334ea6a545e980b5bf2, type: 3}
   - id: note_release
-    text: "M..."
+    text: M...
     duration: 1.5
     voice: {fileID: 8300000, guid: 2cf75e87f58db494d9f9756a6d3910a9, type: 3}
   - id: print_sent

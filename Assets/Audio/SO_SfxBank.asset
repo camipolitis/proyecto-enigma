@@ -15,100 +15,75 @@ MonoBehaviour:
   entries:
   - id: ui_click
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: 82e748fd3799db24aaf3601db6cd7f2b, type: 3}
+    - {fileID: 8300000, guid: 09f75233d25562f44ba70fbf491200c7, type: 3}
     spatialBlend: 0
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: notebook
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: 6a69a5dbb331e6f4aa8bcd05df0ff1a2, type: 3}
     spatialBlend: 0
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: note_pickup
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: a824e92ccb774334184cee134eced566, type: 3}
+    - {fileID: 8300000, guid: 4d126927c146dff4e973048f2489fd7d, type: 3}
     spatialBlend: 0
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: password_error
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: 611dd7ce2448fb5449d4dfe581035f3b, type: 3}
     spatialBlend: 0
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: item_pickup
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: 3e9389f057e365541bc5fda8087fe7e0, type: 3}
     spatialBlend: 0
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: printer
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: cf42854e9f7c64740af0ad007f65004a, type: 3}
     spatialBlend: 0
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: wires
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: 8c65032d5833d1442b102a3ae60f6802, type: 3}
     spatialBlend: 0
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: door_open
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: cb37784dae94ced45b6bebce2bede1f7, type: 3}
     spatialBlend: 1
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: door_locked
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: bc0528b7039cc8540badedce799e670d, type: 3}
     spatialBlend: 1
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: drawer_open
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: 35466fc3ac3eeb247808bdec8431733f, type: 3}
+    - {fileID: 8300000, guid: ccb38793ccee0514084a4d1e29923d1f, type: 3}
     spatialBlend: 1
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: lever
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: 94053c58ae6b81942817e75fc599a1bb, type: 3}
     spatialBlend: 1
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: footstep
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: d447a95ed6e02934e98b0d3429917a84, type: 3}
     spatialBlend: 1
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: hatch
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: c3cbf929c28e8b043ba8042c6ce85e27, type: 3}
     spatialBlend: 1
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: magnet
     clips:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 8300000, guid: 486c25b5840845949a869cc1627f4d37, type: 3}
     spatialBlend: 1
     mixerGroup: {fileID: 24300003, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   - id: item_place

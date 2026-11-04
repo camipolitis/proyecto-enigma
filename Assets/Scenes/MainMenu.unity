@@ -533,12 +533,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Audio.MusicPlayer
   menuLoop: {fileID: 8300000, guid: 3c8e1a92b0474d6f9e5c2b81a0d47f36, type: 3}
   pauseLoop: {fileID: 8300000, guid: 7f2b9d41c8e54a13b6a0e3d95c184720, type: 3}
-  level01Loop: {fileID: 8300000, guid: a5d83e70f2164b9c8e4a1d027b593846, type: 3}
-  level02Loop: {fileID: 8300000, guid: 0e91c4b6a37d4f28b5d8e2a1c9460735, type: 3}
-  level03Loop: {fileID: 0}
-  level04Loop: {fileID: 0}
-  tensionLoop: {fileID: 0}
-  resolveSting: {fileID: 0}
+  level01Loop: {fileID: 8300000, guid: b2690372bc933f84aa8639ba366c2d7e, type: 3}
+  level02Loop: {fileID: 8300000, guid: 1aa97e0da208d9249ad1987f6c95d711, type: 3}
+  level03Loop: {fileID: 8300000, guid: 8a32437e9c0174c468dec9e51d8e6400, type: 3}
+  level04Loop: {fileID: 8300000, guid: f0b62df3ec8177b469b6458a94fa2d5f, type: 3}
+  tensionLoop: {fileID: 8300000, guid: 0352746058556504f86030d599196976, type: 3}
+  resolveSting: {fileID: 8300000, guid: 79d2e8816cc8be14997c6a718a834ac4, type: 3}
   musicGroup: {fileID: 24300006, guid: a8f3c1e24b6d4a719e5d0c8b2f1749e3, type: 2}
   crossfadeSeconds: 0.6
   resolveFadeSeconds: 1.2
