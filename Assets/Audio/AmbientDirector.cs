@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -6,19 +5,7 @@ using UnityEngine.SceneManagement;
 
 namespace Enigma.Audio
 {
-    [Serializable]
-    public class AmbientPointSpec
-    {
-        public string id;
-        public string sceneName;
-        public Vector3 worldPosition;
-        public AudioClip clip;
-        public float minDistance = 1.5f;
-        public float maxDistance = 14f;
-        public float volume = 0.35f;
-    }
-
-    // Loops de sala (2D) y puntos 3D. Clip vacío = silencio (holder).
+    // Loops de sala (2D). Las fuentes 3D viven en cada escena con Output en Ambiente; acá solo se pausan.
     [DefaultExecutionOrder(-40)]
     public class AmbientDirector : MonoBehaviour
     {
@@ -27,8 +14,9 @@ namespace Enigma.Audio
         [SerializeField] private AudioMixerGroup ambientGroup;
         [SerializeField] private AudioClip interiorLoop;
         [SerializeField] private AudioClip pitLoop;
-        [SerializeField] private float bedVolume = 0.22f;
-        [SerializeField] private AmbientPointSpec[] points;
+        // Cada loop tiene su nivel: el interior viene mucho más fuerte que el del pozo
+        [SerializeField] private float interiorVolume = 0.11f;
+        [SerializeField] private float pitVolume = 0.6f;
 
         private AudioSource _bed;
         private readonly List<AudioSource> _live = new List<AudioSource>();
@@ -43,13 +31,13 @@ namespace Enigma.Audio
             }
 
             Instance = this;
-            _bed = MakeSource("AmbBed", 0f, true);
+            _bed = MakeBed();
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         private void Start()
         {
-            Apply(SceneManager.GetActiveScene().name);
+            Apply(SceneManager.GetActiveScene());
         }
 
         private void OnDestroy()
@@ -88,23 +76,25 @@ namespace Enigma.Audio
         {
             if (scene.name == "MainMenu")
                 _paused = false;
-            Apply(scene.name);
+            Apply(scene);
         }
 
-        private void Apply(string sceneName)
+        private void Apply(Scene scene)
         {
-            ClearPoints();
-
-            AudioClip bed = pitLoop;
-            if (sceneName == "Level04_Origen")
+            AudioClip bed;
+            float volume = interiorVolume;
+            if (scene.name == "Level04_Origen")
+            {
                 bed = pitLoop;
-            else if (sceneName == "MainMenu")
+                volume = pitVolume;
+            }
+            else if (scene.name == "MainMenu")
                 bed = null;
             else
                 bed = interiorLoop;
 
-            PlayBed(bed);
-            SpawnPoints(sceneName);
+            PlayBed(bed, volume);
+            CollectPoints(scene);
 
             if (!_paused)
                 return;
@@ -117,7 +107,7 @@ namespace Enigma.Audio
             }
         }
 
-        private void PlayBed(AudioClip clip)
+        private void PlayBed(AudioClip clip, float volume)
         {
             if (_bed == null)
                 return;
@@ -129,7 +119,7 @@ namespace Enigma.Audio
                 return;
             }
 
-            _bed.volume = bedVolume;
+            _bed.volume = volume;
             if (_bed.clip == clip)
             {
                 if (_paused)
@@ -143,52 +133,30 @@ namespace Enigma.Audio
             _bed.Play();
         }
 
-        private void SpawnPoints(string sceneName)
+        private void CollectPoints(Scene scene)
         {
-            if (points == null)
+            _live.Clear();
+            if (!scene.IsValid() || ambientGroup == null)
                 return;
 
-            for (int i = 0; i < points.Length; i++)
+            foreach (var root in scene.GetRootGameObjects())
             {
-                var spec = points[i];
-                if (spec == null || spec.clip == null)
-                    continue;
-                if (spec.sceneName != sceneName)
-                    continue;
-
-                var src = MakeSource(
-                    string.IsNullOrEmpty(spec.id) ? "AmbPoint" : spec.id,
-                    1f,
-                    true);
-                src.transform.position = spec.worldPosition;
-                src.minDistance = spec.minDistance;
-                src.maxDistance = spec.maxDistance;
-                src.rolloffMode = AudioRolloffMode.Logarithmic;
-                src.volume = spec.volume;
-                src.clip = spec.clip;
-                src.Play();
-                _live.Add(src);
+                foreach (var src in root.GetComponentsInChildren<AudioSource>(true))
+                {
+                    if (src.outputAudioMixerGroup == ambientGroup)
+                        _live.Add(src);
+                }
             }
         }
 
-        private void ClearPoints()
+        private AudioSource MakeBed()
         {
-            for (int i = 0; i < _live.Count; i++)
-            {
-                if (_live[i] != null)
-                    Destroy(_live[i].gameObject);
-            }
-            _live.Clear();
-        }
-
-        private AudioSource MakeSource(string objectName, float spatial, bool loop)
-        {
-            var go = new GameObject(objectName);
+            var go = new GameObject("AmbBed");
             go.transform.SetParent(transform, false);
             var src = go.AddComponent<AudioSource>();
             src.playOnAwake = false;
-            src.loop = loop;
-            src.spatialBlend = spatial;
+            src.loop = true;
+            src.spatialBlend = 0f;
             src.outputAudioMixerGroup = ambientGroup;
             src.dopplerLevel = 0f;
             return src;

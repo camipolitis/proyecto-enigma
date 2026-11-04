@@ -96,6 +96,22 @@ namespace Enigma.Player
         private const float ShadowLift = 0.25f;
         // Cuánto se abre la huella respecto del grosor de la parte
         private const float ShadowSpread = 1.7f;
+        // Pasos: suenan en el golpe del talón, cuando un tobillo levantado deja de caer cerca del piso
+        private Transform _footL, _footR;
+        // 0 apoyado, 1 levantado, 2 bajando
+        private readonly int[] _footPhase = new int[2];
+        private readonly float[] _footPrev = new float[2];
+        private readonly float[] _footVy = new float[2];
+        private float _footRest = 10f;
+        private float _lastStep;
+        private const float FootLift = 0.06f;
+        private const float StrikeHeight = 0.07f;
+        private const float StrikeSpeed = 0.2f;
+        private const float FootPlant = 0.025f;
+        private const float StepGap = 0.18f;
+        private const float StillReset = 0.12f;
+        private float _stillTime = 1f;
+        private int _stepFrame = -10;
         private const float Crossfade = 0.32f;
         private const float GetUpFade = 0.5f;
         private const float MinGetUp = 0.4f;
@@ -154,6 +170,8 @@ namespace Enigma.Player
 
             BuildGraph();
             BindShadow();
+            _footL = FindBone(_anim.transform, "LeftFoot");
+            _footR = FindBone(_anim.transform, "RightFoot");
             _ready = _graph.IsValid();
             _wasProne = _state != null && _state.State == PlayerGameplayState.Prone;
         }
@@ -613,6 +631,80 @@ namespace Enigma.Player
             }
             ApplyWeights(Crossfade);
             PinRoot(new Vector3(0f, -StairsDrift(), 0f));
+            TickSteps(speed);
+        }
+
+        private void TickSteps(float speed)
+        {
+            if (_footL == null || _footR == null || _cc == null || Time.deltaTime <= 0f)
+                return;
+
+            float ground = transform.position.y + _cc.center.y - _cc.height * 0.5f;
+            float hl = _footL.position.y - ground;
+            float hr = _footR.position.y - ground;
+            // Tras saltar, caer o levantarse los pies arrancan de cero; el aterrizaje no es un paso
+            bool resumed = Time.frameCount != _stepFrame + 1;
+            _stepFrame = Time.frameCount;
+            if (resumed)
+            {
+                _footPhase[0] = 0;
+                _footPhase[1] = 0;
+                _footPrev[0] = hl;
+                _footPrev[1] = hr;
+                _footVy[0] = 0f;
+                _footVy[1] = 0f;
+                _footRest = Mathf.Min(hl, hr);
+                return;
+            }
+            // Altura de apoyo: baja enseguida con el pie más bajo y sube despacio (escaleras)
+            float low = Mathf.Min(hl, hr);
+            float k = low < _footRest ? 1f : 1f - Mathf.Exp(-2f * Time.deltaTime);
+            _footRest = Mathf.Lerp(_footRest, low, k);
+
+            // cc.velocity a veces da cero un cuadro suelto en plena marcha; solo cuenta si dura
+            _stillTime = speed < 0.15f ? _stillTime + Time.deltaTime : 0f;
+            if (_stillTime > StillReset)
+            {
+                _footPhase[0] = 0;
+                _footPhase[1] = 0;
+                return;
+            }
+
+            Step(0, hl, _footL);
+            Step(1, hr, _footR);
+        }
+
+        private void Step(int i, float height, Transform foot)
+        {
+            // Velocidad suavizada: un cuadro con la pose repetida no cuenta como pie detenido
+            float raw = (height - _footPrev[i]) / Time.deltaTime;
+            _footPrev[i] = height;
+            _footVy[i] = Mathf.Lerp(_footVy[i], raw, 1f - Mathf.Exp(-Time.deltaTime / 0.03f));
+            float vy = _footVy[i];
+            if (_footPhase[i] == 0)
+            {
+                if (height > _footRest + FootLift)
+                    _footPhase[i] = 1;
+                return;
+            }
+            if (_footPhase[i] == 1)
+            {
+                if (vy < -2f * StrikeSpeed)
+                    _footPhase[i] = 2;
+                else if (height > _footRest + FootPlant)
+                    return;
+            }
+
+            // El talón golpea antes de que la planta se asiente; esperar al apoyo completo suena tarde
+            bool strike = height < _footRest + StrikeHeight && vy > -StrikeSpeed;
+            if (!strike && height > _footRest + FootPlant)
+                return;
+
+            _footPhase[i] = 0;
+            if (Time.time - _lastStep < StepGap)
+                return;
+            _lastStep = Time.time;
+            Enigma.Audio.SfxPlayer.Instance?.Play("footstep", foot.position);
         }
 
         private int StairsClip(float speed)
