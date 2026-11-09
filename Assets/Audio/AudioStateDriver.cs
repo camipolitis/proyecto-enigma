@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 namespace Enigma.Audio
 {
-    // MusicDuck baja el padre Musica; el fader Musica (MusicaNivel) lo mezcla A.
+    // MusicDuck baja el padre Musica
     [DefaultExecutionOrder(-50)]
     public class AudioStateDriver : MonoBehaviour
     {
