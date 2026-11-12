@@ -23,8 +23,17 @@ namespace Enigma.Data
         public string memoryCollectedMessage = "Memoria recolectada";
         // Toast la primera vez que se guarda en el journal.
 
+        public bool isMemory;
+        // Solo los que hacen avanzar la historia entran al journal; el resto son pistas.
+
         public Texture2D viewImage;
-        // Ilustración al lado del texto. El body se muestra igual.
+        // Hoja completa o tarjeta. El lector la dibuja sola si imageOnly.
+
+        public bool imageOnly;
+        // El lector muestra viewImage entera, sin título ni cuerpo (calendario, credencial).
+
+        public Texture2D photo;
+        // Foto carnet en la esquina de la hoja (expedientes y fichas).
 
         public AudioClip openVoice;
         // Clip al abrir (cassette). Vacío = solo texto.

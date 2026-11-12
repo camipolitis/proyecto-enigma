@@ -69,13 +69,13 @@ namespace Enigma.Environment
                 // Dos letras de cada lado, entreveradas con registros del personal
                 if (left.HasValue)
                 {
-                    SpillDocs(new[] { "Doc_084", "Doc_StaffA", "Doc_117", "Doc_Staff204" }, left.Value, LeftSpill, 0, 0f);
+                    SpillDocs(new[] { "Doc_084", "Doc_117", "Doc_Staff204" }, left.Value, LeftSpill, 0, 0f);
                     DropFlat("Binder", "Kit_Binder_N3a", left.Value + new Vector3(-1.3f, 0f, -0.5f), 30f, 0.32f);
                     DropFlat("Binder", "Kit_Binder_N3b", left.Value + new Vector3(1.25f, 0f, -0.85f), -65f, 0.32f);
                 }
                 if (right.HasValue)
                 {
-                    SpillDocs(new[] { "Doc_StaffB", "Doc_129", "Doc_Staff731", "Doc_206" }, right.Value, RightSpill, 4, 15f);
+                    SpillDocs(new[] { "Doc_152", "Doc_Staff731", "Doc_206" }, right.Value, RightSpill, 3, 15f);
                     DropFlat("Binder", "Kit_Binder_N3c", right.Value + new Vector3(1.35f, 0f, -0.8f), 110f, 0.32f);
                 }
                 DressPrinterTray();
@@ -531,9 +531,10 @@ namespace Enigma.Environment
         // ---------- N3 ----------
 
         // Expedientes delante del cajón: lado a lo ancho y distancia hacia la sala (-Z)
-        private static readonly Vector2[] LeftSpill = { new Vector2(0f, 0.35f), new Vector2(-0.55f, 0.6f), new Vector2(0.55f, 0.65f), new Vector2(0.05f, 1.0f) };
-        private static readonly Vector2[] RightSpill = { new Vector2(-0.7f, 0.4f), new Vector2(0.7f, 0.35f), new Vector2(-0.25f, 0.9f), new Vector2(0.45f, 1.0f) };
-        private static readonly float[] SpillYaws = { -18f, 34f, -52f, 12f };
+        // Al menos 0.9 m entre hojas para que se cuenten de un vistazo
+        private static readonly Vector2[] LeftSpill = { new Vector2(-0.45f, 0.45f), new Vector2(0.45f, 0.5f), new Vector2(0f, 1.3f) };
+        private static readonly Vector2[] RightSpill = { new Vector2(-0.6f, 0.4f), new Vector2(0.6f, 0.45f), new Vector2(-0.05f, 1.15f) };
+        private static readonly float[] SpillYaws = { -18f, 34f, -52f };
 
         // Grosor de una carpeta en el piso
         private const float PileSheet = 0.006f;
@@ -654,8 +655,55 @@ namespace Enigma.Environment
                 t.SetPositionAndRotation(new Vector3(at.x, floor + PileSheet * 0.5f + 0.001f, at.z), Quaternion.Euler(0f, SpillYaws[i] + yaw, 0f));
                 var kit = t.Find("Kit_UI_Paper");
                 if (kit != null)
+                {
                     Paint(kit.gameObject, Mat("Mat_DocTint_" + (tint + i)));
+                    MarkLetter(go, kit.gameObject);
+                }
             }
+        }
+
+        // Letra roja circulada sobre la hoja del piso, leída del expediente
+        private static void MarkLetter(GameObject doc, GameObject paper)
+        {
+            var reader = doc.GetComponent<DocumentInteractable>();
+            string letter = reader != null && reader.Document != null ? reader.Document.cornerLetter : null;
+            if (string.IsNullOrEmpty(letter) || !LocalBounds(doc.transform, paper, out var lb))
+                return;
+            var t = doc.transform;
+            Vector3 ls = t.lossyScale;
+            var meters = new Vector3(1f / Mathf.Max(0.0001f, ls.x), 1f / Mathf.Max(0.0001f, ls.y), 1f / Mathf.Max(0.0001f, ls.z));
+            var mark = new GameObject("Kit_DocLetter").transform;
+            mark.SetParent(t, false);
+            mark.localPosition = new Vector3(Mathf.Lerp(lb.min.x, lb.max.x, 0.76f), lb.max.y + 0.002f * meters.y, Mathf.Lerp(lb.min.z, lb.max.z, 0.22f));
+            mark.localRotation = Quaternion.identity;
+            mark.localScale = meters;
+
+            var ring = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            ring.name = "Kit_DocLetterRing";
+            ring.transform.SetParent(mark, false);
+            ring.transform.localRotation = Quaternion.Euler(90f, 0f, -6f);
+            ring.transform.localScale = new Vector3(0.12f, 0.08f, 1f);
+            StripColliders(ring);
+            var rr = ring.GetComponent<MeshRenderer>();
+            rr.sharedMaterial = Mat("Mat_InkRing");
+            rr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
+            var txt = new GameObject("Kit_DocLetterText");
+            txt.transform.SetParent(mark, false);
+            txt.transform.localPosition = new Vector3(0f, 0.001f, 0f);
+            txt.transform.localRotation = Quaternion.Euler(90f, 0f, 6f);
+            var tm = txt.AddComponent<TextMesh>();
+            tm.text = letter;
+            tm.font = ItemVisuals.MarkerFont;
+            tm.fontSize = 96;
+            tm.characterSize = 0.0055f;
+            tm.fontStyle = FontStyle.Bold;
+            tm.anchor = TextAnchor.MiddleCenter;
+            tm.alignment = TextAlignment.Center;
+            tm.color = new Color(0.62f, 0.09f, 0.07f, 1f);
+            var mr = txt.GetComponent<MeshRenderer>();
+            mr.sharedMaterial = tm.font.material;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
         // Impresora con la bandeja hacia la sala; las hojas se graban en la bandeja y salen de adentro al prenderse
@@ -690,7 +738,11 @@ namespace Enigma.Environment
                 bool was = go.activeSelf;
                 go.SetActive(true);
                 string id = "print_" + name.Substring(6);
-                ItemVisuals.Dress(go, id);
+                var pickup = go.GetComponent<PickupInteractable>();
+                if (pickup != null && pickup.Item != null)
+                    ItemVisuals.Dress(go, pickup.Item);
+                else
+                    ItemVisuals.Dress(go, id);
                 ItemVisuals.Refont(go);
                 // Al regrabar el modelo ya existe y Dress no apaga el cubo que RestoreHidden volvió a prender
                 HideSelf(go);
@@ -699,6 +751,8 @@ namespace Enigma.Environment
                 var vis = go.transform.Find("Visual_" + id);
                 if (vis != null)
                 {
+                    // La hoja entera sale de la ranura: el modelo va en el origen del pickup que mueve PrintFeed
+                    vis.localPosition = Vector3.zero;
                     var vb = ItemVisuals.Bounds(vis.gameObject);
                     go.transform.position += new Vector3(rest.x - vb.center.x, rest.y - vb.min.y, rest.z - vb.center.z);
                     var box = go.GetComponent<BoxCollider>();
@@ -751,7 +805,10 @@ namespace Enigma.Environment
             var paint = FindLocal("Interactable_Painting");
             if (paint == null)
                 return;
-            var vis = ItemVisuals.Build("painting");
+            var holder = paint.GetComponent<ContainerInteractable>();
+            var vis = holder != null && holder.TakeItem != null
+                ? ItemVisuals.Build(holder.TakeItem)
+                : ItemVisuals.Build("painting");
             if (vis == null)
                 return;
             vis.name = "Kit_PaintingFrame";

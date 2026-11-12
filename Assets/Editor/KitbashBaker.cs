@@ -326,12 +326,119 @@ public static class KitbashBaker
             }
         }
         if (scene.name == "Level02_Lab")
+        {
             BakeLabSystems(scene);
+            NotebookRecord(scene);
+        }
         if (scene.name == "Level03_Archives")
             HatchHingedNorth(scene);
+        JournalOnCanvas(scene);
+        ReaderParts(scene);
+        JournalCatalog(scene);
         ApplyTheme(scene);
         EditorSceneManager.MarkSceneDirty(scene);
         return true;
+    }
+
+    private static void ReaderParts(Scene scene)
+    {
+        foreach (var root in scene.GetRootGameObjects())
+            foreach (var reader in root.GetComponentsInChildren<Enigma.UI.DocumentReaderUI>(true))
+            {
+                reader.EnsureParts();
+                EditorUtility.SetDirty(reader);
+            }
+    }
+
+    private const string CatalogPath = "Assets/ScriptableObjects/Documents/SO_MemoryCatalog.asset";
+
+    // Todas las memorias del proyecto, para que «Continuar» reponga el journal desde los ids guardados
+    private static Enigma.Data.MemoryCatalog MemoryCatalog()
+    {
+        var catalog = AssetDatabase.LoadAssetAtPath<Enigma.Data.MemoryCatalog>(CatalogPath);
+        if (catalog == null)
+        {
+            catalog = ScriptableObject.CreateInstance<Enigma.Data.MemoryCatalog>();
+            AssetDatabase.CreateAsset(catalog, CatalogPath);
+        }
+        var memories = new List<Enigma.Data.DocumentData>();
+        foreach (var guid in AssetDatabase.FindAssets("t:DocumentData"))
+        {
+            var doc = AssetDatabase.LoadAssetAtPath<Enigma.Data.DocumentData>(AssetDatabase.GUIDToAssetPath(guid));
+            if (doc != null && doc.isMemory && !string.IsNullOrEmpty(doc.id))
+                memories.Add(doc);
+        }
+        memories.Sort((a, b) => string.CompareOrdinal(a.id, b.id));
+        bool changed = memories.Count != catalog.memories.Count;
+        for (int i = 0; !changed && i < memories.Count; i++)
+            changed = memories[i] != catalog.memories[i];
+        if (changed)
+        {
+            catalog.memories = memories;
+            EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssets();
+        }
+        return catalog;
+    }
+
+    private static void JournalCatalog(Scene scene)
+    {
+        var catalog = MemoryCatalog();
+        foreach (var root in scene.GetRootGameObjects())
+            foreach (var journal in root.GetComponentsInChildren<Enigma.Memory.MemoryJournal>(true))
+            {
+                var so = new SerializedObject(journal);
+                so.FindProperty("catalog").objectReferenceValue = catalog;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+    }
+
+    // «Continuar» arriba de «Jugar», con su mismo estilo; MainMenuUI lo muestra solo si hay partida guardada
+    private static void MainMenuContinue(Scene scene)
+    {
+        foreach (var root in scene.GetRootGameObjects())
+            foreach (var menu in root.GetComponentsInChildren<Enigma.UI.MainMenuUI>(true))
+            {
+                var so = new SerializedObject(menu);
+                var prop = so.FindProperty("continueButton");
+                var play = FindDeep(root.transform, "BtnJugar");
+                if (play == null)
+                    continue;
+                var existing = FindDeep(root.transform, "BtnContinue");
+                GameObject go = existing != null ? existing.gameObject : Object.Instantiate(play.gameObject, play.parent);
+                go.name = "BtnContinue";
+                var rt = (RectTransform)go.transform;
+                var playRt = (RectTransform)play;
+                rt.anchoredPosition = playRt.anchoredPosition + new Vector2(0f, playRt.sizeDelta.y + ContinueGap);
+                var label = go.GetComponentInChildren<UnityEngine.UI.Text>(true);
+                if (label != null)
+                    label.text = "Continuar";
+                var button = go.GetComponent<UnityEngine.UI.Button>();
+                if (button != null)
+                {
+                    for (int i = button.onClick.GetPersistentEventCount() - 1; i >= 0; i--)
+                        UnityEditor.Events.UnityEventTools.RemovePersistentListener(button.onClick, i);
+                    UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick, menu.Continue);
+                }
+                prop.objectReferenceValue = go;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(go);
+            }
+    }
+
+    private const float ContinueGap = 16f;
+
+    private static Transform FindDeep(Transform t, string name)
+    {
+        if (t.name == name)
+            return t;
+        for (int i = 0; i < t.childCount; i++)
+        {
+            var f = FindDeep(t.GetChild(i), name);
+            if (f != null)
+                return f;
+        }
+        return null;
     }
 
     // Con las bisagras al norte la tapa se levanta por el lado sur, el del jugador, y deja ver el hueco
@@ -345,6 +452,78 @@ public static class KitbashBaker
                 var pitch = so.FindProperty("openPitch");
                 pitch.floatValue = Mathf.Abs(pitch.floatValue);
                 so.ApplyModifiedPropertiesWithoutUndo();
+            }
+        }
+    }
+
+    private const string TestRecordDoc = "Assets/ScriptableObjects/Documents/SO_Doc_TestRecord.asset";
+
+    // El registro de la notebook se lee en el lector común de la escena
+    private static void NotebookRecord(Scene scene)
+    {
+        var doc = AssetDatabase.LoadAssetAtPath<Enigma.Data.DocumentData>(TestRecordDoc);
+        if (doc == null)
+        {
+            Debug.LogError("Kitbash bake: falta " + TestRecordDoc);
+            return;
+        }
+        Enigma.UI.DocumentReaderUI reader = null;
+        foreach (var root in scene.GetRootGameObjects())
+            if (reader == null)
+                reader = root.GetComponentInChildren<Enigma.UI.DocumentReaderUI>(true);
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            foreach (var folders in root.GetComponentsInChildren<Enigma.UI.NotebookFolderUI>(true))
+            {
+                var so = new SerializedObject(folders);
+                so.FindProperty("reader").objectReferenceValue = reader;
+                so.FindProperty("record").objectReferenceValue = doc;
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+        }
+    }
+
+    // El journal escucha OnMemoryAdded mientras está prendido: si su objeto está apagado, pasa al Canvas
+    private static void JournalOnCanvas(Scene scene)
+    {
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            foreach (var ui in root.GetComponentsInChildren<Enigma.Memory.MemoryJournalUI>(true))
+            {
+                if (ui.gameObject.activeSelf)
+                    continue;
+                var canvas = ui.GetComponentInParent<Canvas>(true);
+                if (canvas == null || canvas.GetComponent<Enigma.Memory.MemoryJournalUI>() != null)
+                    continue;
+                var moved = canvas.gameObject.AddComponent<Enigma.Memory.MemoryJournalUI>();
+                EditorUtility.CopySerialized(ui, moved);
+                Repoint(scene, ui, moved);
+                Object.DestroyImmediate(ui);
+            }
+        }
+    }
+
+    private static void Repoint(Scene scene, Object from, Object to)
+    {
+        foreach (var root in scene.GetRootGameObjects())
+        {
+            foreach (var mb in root.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (mb == null || mb == to)
+                    continue;
+                var so = new SerializedObject(mb);
+                var it = so.GetIterator();
+                bool changed = false;
+                while (it.Next(true))
+                {
+                    if (it.propertyType == SerializedPropertyType.ObjectReference && it.objectReferenceValue == from)
+                    {
+                        it.objectReferenceValue = to;
+                        changed = true;
+                    }
+                }
+                if (changed)
+                    so.ApplyModifiedPropertiesWithoutUndo();
             }
         }
     }
@@ -464,6 +643,7 @@ public static class KitbashBaker
 
     private static bool ThemeScene(Scene scene)
     {
+        MainMenuContinue(scene);
         ApplyTheme(scene);
         EditorSceneManager.MarkSceneDirty(scene);
         return true;

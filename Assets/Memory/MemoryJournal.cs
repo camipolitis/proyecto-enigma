@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Enigma.Core;
 using Enigma.Data;
 using UnityEngine;
 
@@ -10,6 +11,9 @@ namespace Enigma.Memory
     {
         public static MemoryJournal Instance { get; private set; }
 
+        // De acá salen los documentos de las memorias guardadas al continuar
+        [SerializeField] private MemoryCatalog catalog;
+
         private readonly List<DocumentData> _entries = new List<DocumentData>();
         private readonly HashSet<string> _ids = new HashSet<string>();
 
@@ -18,6 +22,7 @@ namespace Enigma.Memory
 
         private void Awake()
         {
+            bool restore = GameSave.ConsumeContinue();
             if (Instance != null && Instance != this)
             {
                 // El journal de esta escena toma Instance y hereda las notas.
@@ -41,6 +46,21 @@ namespace Enigma.Memory
             Instance = this;
             transform.SetParent(null);
             DontDestroyOnLoad(gameObject);
+            if (restore)
+                Restore(GameSave.MemoryIds());
+        }
+
+        // Sin aviso: son memorias que ya se habían leído antes de guardar
+        private void Restore(string[] ids)
+        {
+            if (catalog == null || ids == null)
+                return;
+            for (int i = 0; i < ids.Length; i++)
+            {
+                var doc = catalog.Find(ids[i]);
+                if (doc != null && _ids.Add(doc.id))
+                    _entries.Add(doc);
+            }
         }
 
         private void OnDestroy()

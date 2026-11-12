@@ -17,9 +17,34 @@ namespace Enigma.UI
         [SerializeField] private RawImage viewImage;
         [SerializeField] private PlayerInputHandler input;
         [SerializeField] private MemoryJournal journal;
-        [SerializeField] private MemoryJournalUI journalUi;
         // Cuánto queda el subtítulo de una grabación sin clip
         [SerializeField] private float listenSeconds = 8f;
+        // Un texto que no entra en la hoja se parte en páginas
+        [SerializeField] private Button pagePrev;
+        [SerializeField] private Button pageNext;
+        [SerializeField] private Text pageLabel;
+        // En papel la letra se achica hasta esta fracción antes de partir en páginas
+        [SerializeField] private float minBodyScale = 0.6f;
+
+        private const int PagerFontSize = 16;
+        private const int PagerArrowSize = 26;
+
+        private struct Page
+        {
+            public int start;
+            public int end;
+            public string prefix;
+            public string text;
+        }
+
+        private readonly System.Collections.Generic.List<Page> _pages = new System.Collections.Generic.List<Page>();
+        private int _page;
+        private string _fullBody = string.Empty;
+        private string _mark;
+        private int _markStart = -1;
+        private bool _paged;
+        private bool _shrinkBody;
+        private Coroutine _ring;
 
         private DocumentData _current;
         private InteractContext _context;
@@ -47,12 +72,95 @@ namespace Enigma.UI
             if (root != null)
                 root.SetActive(false);
             LoadFonts();
+            if (pagePrev != null)
+                pagePrev.onClick.AddListener(PrevPage);
+            if (pageNext != null)
+                pageNext.onClick.AddListener(NextPage);
+            RefreshPager();
+        }
+
+        // Lo llama el baker: la hoja, el fondo y los controles de página quedan grabados en la escena
+        public void EnsureParts()
+        {
+            var host = Host();
+            if (host == null)
+                return;
+            EnsureDimmer(host);
+            var paper = EnsurePaper(host).transform;
+            if (pagePrev == null)
+                pagePrev = PagerButton(paper, "PagePrev", "<", new Vector2(0.02f, 0.015f), new Vector2(0.14f, 0.10f));
+            if (pageNext == null)
+                pageNext = PagerButton(paper, "PageNext", ">", new Vector2(0.86f, 0.015f), new Vector2(0.98f, 0.10f));
+            if (pageLabel == null)
+                pageLabel = PagerText(paper, "PageLabel", "1/1", new Vector2(0.38f, 0.015f), new Vector2(0.62f, 0.10f));
+            pagePrev.gameObject.SetActive(false);
+            pageNext.gameObject.SetActive(false);
+            pageLabel.gameObject.SetActive(false);
+        }
+
+        private Button PagerButton(Transform parent, string name, string glyph, Vector2 min, Vector2 max)
+        {
+            var label = PagerText(parent, name, glyph, min, max);
+            label.raycastTarget = true;
+            var button = label.gameObject.AddComponent<Button>();
+            button.targetGraphic = label;
+            button.navigation = new Navigation { mode = Navigation.Mode.None };
+            return button;
+        }
+
+        private Text PagerText(Transform parent, string name, string value, Vector2 min, Vector2 max)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.layer = parent.gameObject.layer;
+            go.transform.SetParent(parent, false);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = min;
+            rt.anchorMax = max;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            var text = go.AddComponent<Text>();
+            text.raycastTarget = false;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.font = bodyLabel != null ? bodyLabel.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.text = value;
+            return text;
         }
 
         private void Update()
         {
-            TryCloseWithBack();
+            if (TryCloseWithBack())
+                return;
+            ReadPageKeys();
         }
+
+        private void ReadPageKeys()
+        {
+            if (!IsOpen || _pages.Count < 2 || (ModalStack.Instance != null && !ModalStack.Instance.IsTop(Kind)))
+                return;
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            var pad = UnityEngine.InputSystem.Gamepad.current;
+            if ((kb != null && kb.rightArrowKey.wasPressedThisFrame) || (pad != null && pad.dpad.right.wasPressedThisFrame))
+                NextPage();
+            else if ((kb != null && kb.leftArrowKey.wasPressedThisFrame) || (pad != null && pad.dpad.left.wasPressedThisFrame))
+                PrevPage();
+        }
+
+        public void NextPage()
+        {
+            if (_page + 1 < _pages.Count)
+                ShowPage(_page + 1);
+        }
+
+        public void PrevPage()
+        {
+            if (_page > 0)
+                ShowPage(_page - 1);
+        }
+
+        public int PageCount => _pages.Count;
+        public int PageIndex => _page;
 
         public void Open(DocumentData document, InteractContext context)
         {
@@ -68,11 +176,11 @@ namespace Enigma.UI
             LoadFonts();
 
             bool burned = document != null && document.id != null && document.id.IndexOf("burn") >= 0;
-            bool calendar = IsCalendar(document);
+            bool imageOnly = IsImageOnly(document);
             bool print = IsPrint(document);
             Texture photo = null;
-            if (!fromComputer && !burned && !calendar && !print)
-                photo = PickPhoto(document);
+            if (document != null && !fromComputer && !burned && !imageOnly && !print)
+                photo = document.photo;
 
             if (titleLabel != null)
             {
@@ -82,15 +190,19 @@ namespace Enigma.UI
 
             string mark = null;
             string markBefore = null;
+            string text = document != null ? document.body : string.Empty;
+            _fullBody = ExtractMark(text ?? string.Empty, out mark, out markBefore);
+            _mark = mark;
+            _markStart = mark != null ? markBefore.Length : -1;
             if (bodyLabel != null)
             {
                 bodyLabel.supportRichText = true;
-                string text = document != null ? document.body : string.Empty;
-                bodyLabel.text = ExtractMark(text ?? string.Empty, out mark, out markBefore);
+                bodyLabel.text = _fullBody;
             }
 
-            if (calendar)
-                LayoutCalendar(document);
+            _paged = false;
+            if (imageOnly)
+                LayoutImage(document);
             else if (print)
                 LayoutPrint(document);
             else if (fromComputer)
@@ -98,8 +210,9 @@ namespace Enigma.UI
             else
                 LayoutPhysical(photo, document);
 
-            ApplyMarks(document, burned, mark, markBefore);
+            ApplyMarks(document, burned);
             OpenModal();
+            Paginate();
 
             if (document != null && document.tensionOnRead)
                 Enigma.Audio.MusicPlayer.Instance?.EnterTension();
@@ -117,11 +230,16 @@ namespace Enigma.UI
             float duration = document.openVoice != null ? document.openVoice.length : listenSeconds;
             _listenUntil = Time.unscaledTime + duration;
             SubtitleSystem.Instance?.Show(document.body, duration, document.openVoice);
-            if (LiveJournal != null && LiveJournal.TryAdd(document))
-            {
+            Remember(document);
+        }
+
+        // El toast lo muestra MemoryJournalUI al recibir OnMemoryAdded
+        private void Remember(DocumentData document)
+        {
+            if (document == null || !document.isMemory || LiveJournal == null)
+                return;
+            if (LiveJournal.TryAdd(document))
                 GameFlagSystem.Instance?.Set("note_read", true);
-                journalUi?.ShowToast(document.memoryCollectedMessage);
-            }
         }
 
         // ((texto)) en el cuerpo: se muestra el texto y se le dibuja un círculo de tinta
@@ -138,7 +256,7 @@ namespace Enigma.UI
             return before + mark + body.Substring(b + 2);
         }
 
-        private void ApplyMarks(DocumentData document, bool burned, string mark, string markBefore)
+        private void ApplyMarks(DocumentData document, bool burned)
         {
             var host = Host();
             var paper = host != null ? host.Find("PaperSheet") : null;
@@ -158,8 +276,210 @@ namespace Enigma.UI
                 ShowOverlay(paper, "SmokeMark", DocArt.Smoke(), new Vector2(0.02f, 0.62f), new Vector2(0.34f, 0.99f), 0f);
             if (document != null && !string.IsNullOrEmpty(document.cornerLetter))
                 ShowCornerLetter(paper, document.cornerLetter);
-            if (!string.IsNullOrEmpty(mark) && bodyLabel != null && isActiveAndEnabled)
-                StartCoroutine(PlaceRing(mark, markBefore));
+        }
+
+        // Parte el cuerpo en páginas que entran en la hoja; sin páginas no hay controles
+        private void Paginate()
+        {
+            _pages.Clear();
+            _page = 0;
+            if (!_paged || bodyLabel == null || !bodyLabel.gameObject.activeInHierarchy)
+            {
+                RefreshPager();
+                return;
+            }
+            Canvas.ForceUpdateCanvases();
+            float height = bodyLabel.rectTransform.rect.height;
+            bodyLabel.resizeTextForBestFit = false;
+            bodyLabel.verticalOverflow = VerticalWrapMode.Overflow;
+            if (_shrinkBody)
+            {
+                int min = Mathf.Max(1, Mathf.RoundToInt(bodyLabel.fontSize * minBodyScale));
+                while (bodyLabel.fontSize > min && TextHeight(_fullBody) > height)
+                    bodyLabel.fontSize--;
+            }
+            SplitPages(_fullBody, height);
+            ShowPage(0);
+        }
+
+        private float TextHeight(string text)
+        {
+            var settings = bodyLabel.GetGenerationSettings(new Vector2(bodyLabel.rectTransform.rect.width, 0f));
+            float ppu = Mathf.Max(0.0001f, bodyLabel.pixelsPerUnit);
+            return bodyLabel.cachedTextGeneratorForLayout.GetPreferredHeight(text, settings) / ppu;
+        }
+
+        private void SplitPages(string full, float height)
+        {
+            var breaks = BreakPoints(full);
+            int start = SkipBlank(full, 0);
+            while (start < full.Length)
+            {
+                string prefix = string.Concat(OpenTags(full, start));
+                // La página llega hasta el último corte que todavía entra
+                int first = breaks.FindIndex(b => b > start);
+                if (first < 0)
+                    first = breaks.Count - 1;
+                int lo = first, hi = breaks.Count - 1, best = -1;
+                while (lo <= hi)
+                {
+                    int mid = (lo + hi) / 2;
+                    if (TextHeight(PageText(full, prefix, start, breaks[mid])) <= height)
+                    {
+                        best = mid;
+                        lo = mid + 1;
+                    }
+                    else
+                        hi = mid - 1;
+                }
+                // Una frase resaltada no se parte entre páginas si hay un corte anterior fuera de ella
+                if (best >= 0)
+                {
+                    int keep = best;
+                    while (keep > first && OpenTags(full, breaks[keep]).Count > 0)
+                        keep--;
+                    if (OpenTags(full, breaks[keep]).Count == 0)
+                        best = keep;
+                }
+                int end = breaks[best >= 0 ? best : first];
+                _pages.Add(new Page { start = start, end = end, prefix = prefix, text = PageText(full, prefix, start, end) });
+                start = SkipBlank(full, end);
+            }
+        }
+
+        // Cortes posibles: espacios y saltos fuera de etiquetas, más el final del texto
+        private static System.Collections.Generic.List<int> BreakPoints(string text)
+        {
+            var list = new System.Collections.Generic.List<int>();
+            bool inTag = false;
+            for (int i = 0; i < text.Length; i++)
+            {
+                char c = text[i];
+                if (c == '<')
+                    inTag = true;
+                else if (c == '>')
+                    inTag = false;
+                else if (!inTag && (c == ' ' || c == '\n'))
+                    list.Add(i);
+            }
+            list.Add(text.Length);
+            return list;
+        }
+
+        private static int SkipBlank(string text, int i)
+        {
+            while (i < text.Length && (text[i] == ' ' || text[i] == '\n'))
+                i++;
+            return i;
+        }
+
+        // Cada página reabre las etiquetas que venían abiertas y cierra las que quedan abiertas
+        private static string PageText(string full, string prefix, int start, int end)
+        {
+            var open = OpenTags(full, end);
+            var sb = new System.Text.StringBuilder(prefix);
+            sb.Append(full, start, end - start);
+            for (int i = open.Count - 1; i >= 0; i--)
+                sb.Append("</").Append(TagName(open[i])).Append('>');
+            return sb.ToString();
+        }
+
+        private static System.Collections.Generic.List<string> OpenTags(string text, int end)
+        {
+            var open = new System.Collections.Generic.List<string>();
+            int i = 0;
+            while (i < end)
+            {
+                int a = text.IndexOf('<', i);
+                if (a < 0 || a >= end)
+                    break;
+                int b = text.IndexOf('>', a);
+                if (b < 0 || b >= end)
+                    break;
+                string tag = text.Substring(a, b - a + 1);
+                if (tag.StartsWith("</"))
+                {
+                    string name = tag.Substring(2, tag.Length - 3);
+                    int k = open.FindLastIndex(t => TagName(t) == name);
+                    if (k >= 0)
+                        open.RemoveAt(k);
+                }
+                else
+                    open.Add(tag);
+                i = b + 1;
+            }
+            return open;
+        }
+
+        private static string TagName(string tag)
+        {
+            int stop = tag.IndexOfAny(new[] { '=', '>' }, 1);
+            return stop > 1 ? tag.Substring(1, stop - 1) : tag.Trim('<', '>');
+        }
+
+        private void ShowPage(int index)
+        {
+            if (bodyLabel == null || _pages.Count == 0)
+                return;
+            _page = Mathf.Clamp(index, 0, _pages.Count - 1);
+            var p = _pages[_page];
+            bodyLabel.text = p.text;
+            if (_ring != null)
+                StopCoroutine(_ring);
+            _ring = null;
+            HideMark(bodyLabel.transform, "InkRing");
+            // El aro solo se dibuja en la página donde está la marca
+            if (_markStart >= p.start && _markStart + _mark.Length <= p.end && isActiveAndEnabled)
+                _ring = StartCoroutine(PlaceRing(_mark, p.prefix + _fullBody.Substring(p.start, _markStart - p.start)));
+            RefreshPager();
+        }
+
+        private void RefreshPager()
+        {
+            bool show = _pages.Count > 1;
+            if (pagePrev != null)
+            {
+                pagePrev.gameObject.SetActive(show);
+                pagePrev.interactable = _page > 0;
+            }
+            if (pageNext != null)
+            {
+                pageNext.gameObject.SetActive(show);
+                pageNext.interactable = _page + 1 < _pages.Count;
+            }
+            if (pageLabel != null)
+            {
+                pageLabel.gameObject.SetActive(show);
+                pageLabel.text = (_page + 1) + "/" + Mathf.Max(1, _pages.Count);
+            }
+            if (show && bodyLabel != null)
+                TintPager(bodyLabel.color, bodyLabel.font);
+        }
+
+        // Los controles toman la tinta de la hoja: fósforo en la pantalla, tinta en el papel
+        private void TintPager(Color ink, Font font)
+        {
+            if (pageLabel != null)
+            {
+                pageLabel.color = ink;
+                pageLabel.font = font;
+                pageLabel.fontSize = Mathf.RoundToInt(PagerFontSize * UiScale(pageLabel));
+            }
+            foreach (var b in new[] { pagePrev, pageNext })
+            {
+                if (b == null)
+                    continue;
+                var label = b.GetComponentInChildren<Text>(true);
+                if (label != null)
+                {
+                    label.color = ink;
+                    label.font = font;
+                    label.fontSize = Mathf.RoundToInt(PagerArrowSize * UiScale(label));
+                }
+                var colors = b.colors;
+                colors.disabledColor = new Color(1f, 1f, 1f, 0.25f);
+                b.colors = colors;
+            }
         }
 
         private void ShowCornerLetter(Transform paper, string letter)
@@ -253,42 +573,14 @@ namespace Enigma.UI
             r.anchoredPosition = new Vector2(rect.xMin + prefixW + markW * 0.5f, rect.yMax - through + lineH * 0.5f);
         }
 
-        private static bool IsCalendar(DocumentData document)
+        private static bool IsImageOnly(DocumentData document)
         {
-            if (document == null)
-                return false;
-            if (!string.IsNullOrEmpty(document.id) && document.id.IndexOf("calendar") >= 0)
-                return true;
-            return document.viewImage != null && document.id == "calendar_dec1978";
+            return document != null && document.imageOnly && document.viewImage != null;
         }
 
         private static bool IsPrint(DocumentData document)
         {
             return document != null && !string.IsNullOrEmpty(document.id) && document.id.StartsWith("print_");
-        }
-
-        private static Texture PickPhoto(DocumentData document)
-        {
-            if (document == null || string.IsNullOrEmpty(document.id))
-                return null;
-            if (document.id == "staff_rest")
-                return null;
-            string path = null;
-            if (document.id == "staff_204")
-                path = "Docs/id_1";
-            else if (document.id == "staff_731")
-                path = "Docs/id_2";
-            else if (document.id == "subject_084")
-                path = "Docs/id_3";
-            else if (document.id == "subject_117")
-                path = "Docs/id_4";
-            else if (document.id == "subject_129")
-                path = "Docs/id_8";
-            else if (document.id == "subject_206")
-                path = "Docs/id_9";
-            if (path == null)
-                return null;
-            return Resources.Load<Texture2D>(path);
         }
 
         public void OpenFromJournal(DocumentData document)
@@ -329,13 +621,18 @@ namespace Enigma.UI
                 titleLabel.gameObject.SetActive(false);
                 titleLabel.text = title ?? string.Empty;
             }
+            _fullBody = body ?? string.Empty;
+            _mark = null;
+            _markStart = -1;
             if (bodyLabel != null)
             {
                 bodyLabel.gameObject.SetActive(false);
-                bodyLabel.text = body ?? string.Empty;
+                bodyLabel.text = _fullBody;
             }
+            _paged = false;
             LayoutPhysical(null, null);
             OpenModal();
+            Paginate();
         }
 
         public override void Close()
@@ -355,13 +652,7 @@ namespace Enigma.UI
 
             if (_journalOnClose && closing != null)
             {
-                bool firstTime = LiveJournal != null && LiveJournal.TryAdd(closing);
-                if (firstTime)
-                {
-                    GameFlagSystem.Instance?.Set("note_read", true);
-                    journalUi?.ShowToast(closing.memoryCollectedMessage);
-                }
-
+                Remember(closing);
                 PlayReleaseLine(ctx, closing);
             }
 
@@ -414,7 +705,7 @@ namespace Enigma.UI
             }
         }
 
-        private void LayoutCalendar(DocumentData document)
+        private void LayoutImage(DocumentData document)
         {
             var host = Host();
             EnsureDimmer(host).gameObject.SetActive(true);
@@ -465,8 +756,19 @@ namespace Enigma.UI
             PlaceIdPhoto(paper.transform, null);
             DrawPrintLines(paper.transform);
 
+            // Encabezado chico de la carpeta, sobre la primera línea
             if (titleLabel != null)
-                titleLabel.gameObject.SetActive(false);
+            {
+                bool hasTitle = document != null && !string.IsNullOrEmpty(document.title);
+                titleLabel.gameObject.SetActive(hasTitle);
+                if (hasTitle)
+                {
+                    ApplyFont(titleLabel, ItemVisuals.HeaderFont, 18, new Color(0.36f, 0.42f, 0.55f, 1f));
+                    titleLabel.alignment = TextAnchor.MiddleCenter;
+                    titleLabel.text = document.title;
+                    SitIn(titleLabel.rectTransform, paper.transform, new Vector2(0.08f, 0.90f), new Vector2(0.92f, 0.96f));
+                }
+            }
 
             if (viewImage != null)
                 viewImage.gameObject.SetActive(false);
@@ -532,7 +834,9 @@ namespace Enigma.UI
                 bodyLabel.gameObject.SetActive(true);
                 ApplyFont(bodyLabel, zen, 16, phosphor);
                 bodyLabel.alignment = TextAnchor.UpperLeft;
-                SitIn(bodyLabel.rectTransform, paper.transform, new Vector2(0.07f, 0.06f), new Vector2(0.93f, 0.82f));
+                SitIn(bodyLabel.rectTransform, paper.transform, new Vector2(0.07f, 0.12f), new Vector2(0.93f, 0.82f));
+                _paged = true;
+                _shrinkBody = false;
             }
         }
 
@@ -571,15 +875,13 @@ namespace Enigma.UI
             {
                 bodyLabel.gameObject.SetActive(true);
                 ApplyFont(bodyLabel, bodyFace, 17, ink);
-                // Si no entra en la hoja se achica en lugar de salirse del papel
-                bodyLabel.resizeTextForBestFit = true;
-                bodyLabel.resizeTextMaxSize = bodyLabel.fontSize;
-                bodyLabel.resizeTextMinSize = Mathf.RoundToInt(bodyLabel.fontSize * 0.6f);
-                bodyLabel.verticalOverflow = VerticalWrapMode.Truncate;
                 bodyLabel.alignment = TextAnchor.UpperLeft;
                 SitIn(bodyLabel.rectTransform, paper.transform,
-                    new Vector2(0.07f, 0.06f),
+                    new Vector2(0.07f, 0.12f),
                     new Vector2(hasPhoto ? 0.66f : 0.93f, 0.82f));
+                // Si no entra se achica y, si igual no entra, se parte en páginas
+                _paged = true;
+                _shrinkBody = true;
             }
 
             PlaceIdPhoto(paper.transform, photo);
@@ -613,6 +915,7 @@ namespace Enigma.UI
             if (img != null)
                 return img;
             var go = new GameObject("PaperSheet");
+            go.layer = host.gameObject.layer;
             go.transform.SetParent(host, false);
             var rt = go.AddComponent<RectTransform>();
             rt.anchorMin = new Vector2(0.18f, 0.08f);
@@ -632,6 +935,7 @@ namespace Enigma.UI
             if (img != null)
                 return img;
             var go = new GameObject("Dimmer");
+            go.layer = host.gameObject.layer;
             go.transform.SetParent(host, false);
             var rt = go.AddComponent<RectTransform>();
             rt.anchorMin = Vector2.zero;

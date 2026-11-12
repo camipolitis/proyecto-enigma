@@ -23,6 +23,7 @@ MonoBehaviour:
   releaseSubtitle: Lo encontraron...
   releaseDialogueId: 
   memoryCollectedMessage: Memoria recolectada
+  isMemory: 1
   viewImage: {fileID: 0}
   openVoice: {fileID: 0}
   audioOnly: 0

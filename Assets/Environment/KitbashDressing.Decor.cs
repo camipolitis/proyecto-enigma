@@ -1,5 +1,6 @@
 using Enigma.Cinematics;
 using Enigma.Interaction;
+using Enigma.UI;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
@@ -920,6 +921,8 @@ namespace Enigma.Environment
             PaintGoNamed("Generator", _rust);
             PaintGoNamed("Lockers", _rust);
             PaintGoNamed("BurnMark", _rust);
+            // La mancha flota sobre el piso: sin collider, lo que se apoya con FloorBelow queda debajo
+            SupportCollider("BurnMark");
             PaintGoNamed("HatchLid", Mat("Mat_HatchLid"));
             PaintGoNamed("Chair_Origen", _rust);
             PaintGoNamed("ArchiveDesk", _wood);
@@ -1379,8 +1382,6 @@ namespace Enigma.Environment
             var screen = FindLocal("PcScreen");
             if (screen != null)
             {
-                screen.transform.SetPositionAndRotation(new Vector3(mb.center.x, mb.min.y + mb.size.y * 0.56f, mb.max.z + 0.004f), Quaternion.identity);
-                screen.transform.localScale = new Vector3(mb.size.x * 0.7f, mb.size.y * 0.55f, 0.008f);
                 var on = Resources.Load<Material>("Mats/Mat_ScreenOn");
                 var rend = screen.GetComponent<MeshRenderer>();
                 if (on != null && rend != null)
@@ -1395,6 +1396,107 @@ namespace Enigma.Environment
             kit.transform.position += Vector3.right * (sb.max.x + DeskMargin - pb.min.x);
             printer.transform.position = Encapsulate(kit).center;
             HideVisual(printer);
+        }
+
+        // Paso entre rayos al medir el panel del monitor
+        private const float PanelProbeStep = 0.004f;
+        // Salto de profundidad entre dos rayos vecinos que todavía cuenta como la misma cara del panel
+        private const float PanelFaceTolerance = 0.003f;
+        private const float ScreenCover = 0.9f;
+        private const float ScreenThick = 0.002f;
+
+        // La pantalla encendida va pegada a la cara del panel: el pie del monitor sobresale más que el vidrio,
+        // así que la caja del modelo no sirve; se mide la cara con rayos contra la malla
+        private void FitPcScreen(string sceneName)
+        {
+            if (sceneName != "Level03_Archives" || Application.isPlaying)
+                return;
+            var set = FindLocal("Kit_Computer");
+            var screen = FindLocal("PcScreen");
+            var mon = set != null ? FindChildNamed(set.transform, "Monitor") : null;
+            if (screen == null || mon == null)
+                return;
+
+            var temps = new System.Collections.Generic.List<MeshCollider>();
+            foreach (var f in mon.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (f.sharedMesh == null)
+                    continue;
+                var mc = f.gameObject.AddComponent<MeshCollider>();
+                mc.sharedMesh = f.sharedMesh;
+                temps.Add(mc);
+            }
+            Physics.SyncTransforms();
+
+            var mb = Encapsulate(mon.gameObject);
+            float startZ = mb.max.z + 0.1f;
+            // El panel es el tramo liso más largo de la columna central: el pie y el borde cambian de profundidad de golpe
+            if (FaceRun(temps, mb.min.y, mb.max.y, y => new Vector2(mb.center.x, y), startZ, out float yMin, out float yMax, out float zLow, out float zHigh))
+            {
+                float midY = (yMin + yMax) * 0.5f;
+                float slope = (zHigh - zLow) / Mathf.Max(0.001f, yMax - yMin);
+                float faceMid = (zLow + zHigh) * 0.5f;
+                if (FaceRun(temps, mb.min.x, mb.max.x, x => new Vector2(x, midY), startZ, out float xMin, out float xMax, out _, out _))
+                {
+                    // El panel puede estar inclinado: la pantalla sigue su pendiente
+                    Vector3 up = new Vector3(0f, 1f, slope).normalized;
+                    Vector3 normal = new Vector3(0f, -slope, 1f).normalized;
+                    float height = (yMax - yMin) / up.y;
+                    var center = new Vector3((xMin + xMax) * 0.5f, midY, faceMid) + normal * ScreenThick;
+                    screen.transform.SetPositionAndRotation(center, Quaternion.LookRotation(normal, up));
+                    screen.transform.localScale = new Vector3((xMax - xMin) * ScreenCover, height * ScreenCover, ScreenThick);
+                }
+            }
+
+            foreach (var mc in temps)
+                if (mc != null)
+                    Object.DestroyImmediate(mc);
+        }
+
+        // Tramo continuo más largo donde la profundidad cambia poco de un rayo al siguiente
+        private static bool FaceRun(System.Collections.Generic.List<MeshCollider> cols, float from, float to,
+            System.Func<float, Vector2> at, float startZ, out float runFrom, out float runTo, out float zFrom, out float zTo)
+        {
+            runFrom = runTo = zFrom = zTo = 0f;
+            float best = 0f;
+            bool inRun = false;
+            float curFrom = 0f, curZ = 0f, prevZ = 0f;
+            for (float t = from; t <= to + PanelProbeStep * 0.5f; t += PanelProbeStep)
+            {
+                Vector2 p = at(t);
+                bool hit = PanelDepth(cols, p.x, p.y, startZ, out float z);
+                bool smooth = hit && inRun && Mathf.Abs(z - prevZ) <= PanelFaceTolerance;
+                if (hit && !smooth)
+                {
+                    curFrom = t;
+                    curZ = z;
+                }
+                inRun = hit;
+                if (hit)
+                {
+                    if (t - curFrom > best)
+                    {
+                        best = t - curFrom;
+                        runFrom = curFrom;
+                        runTo = t;
+                        zFrom = curZ;
+                        zTo = z;
+                    }
+                    prevZ = z;
+                }
+            }
+            return best > PanelProbeStep * 4f;
+        }
+
+        // Primer punto de la malla que toca un rayo que viaja desde el frente (+Z) hacia el monitor
+        private static bool PanelDepth(System.Collections.Generic.List<MeshCollider> cols, float x, float y, float startZ, out float z)
+        {
+            z = float.MinValue;
+            var ray = new Ray(new Vector3(x, y, startZ), Vector3.back);
+            foreach (var mc in cols)
+                if (mc.Raycast(ray, out var hit, 1f) && hit.point.z > z)
+                    z = hit.point.z;
+            return z > float.MinValue;
         }
 
         // Modelo apoyado en pos, centrado en planta; height fija la altura y maxSide acota el lado mayor
@@ -1862,7 +1964,7 @@ namespace Enigma.Environment
             else if (sceneName == "Level04_Origen")
             {
                 PutNamed("cardboardBoxClosed", "Kit_Box_N4a", new Vector3(-6.05f, 0.02f, -3.55f), 14f, _wood, 0.42f);
-                PutNamed("books", "Kit_books_N4", new Vector3(3.4f, 0.72f, -3.45f), -15f, _wood, 0.14f);
+                PutNamed("books", "Kit_books_N4", new Vector3(4.3f, 0.72f, -3.6f), -15f, _wood, 0.14f);
             }
         }
 
@@ -1870,60 +1972,94 @@ namespace Enigma.Environment
         {
             if (sceneName == "Level01_Room")
             {
-                StampNews("PaperNews_6", "Docs/paper_6", new Vector3(4.15f, 0.03f, -4.55f));
+                StampNews("PaperNews_6", new Vector3(4.15f, 0.03f, -4.55f), true);
             }
             else if (sceneName == "Level02_Lab")
             {
-                StampNews("PaperNews_7", "Docs/paper_7", new Vector3(1.15f, 0.03f, -3.85f));
+                StampNews("PaperNews_7", new Vector3(1.15f, 0.03f, -3.85f), true);
             }
             else if (sceneName == "Level03_Archives")
             {
-                StampNews("PaperNews_6", "Docs/paper_6", new Vector3(3.55f, 0.03f, 1.55f));
-                StampNews("PaperNews_7", "Docs/paper_7", new Vector3(3.95f, 0.03f, 1.15f));
+                // Fuera del derrame de expedientes y del borde de la mancha
+                StampNews("PaperNews_6", new Vector3(2.45f, 0.03f, 1.95f), true);
+                StampNews("PaperNews_7", new Vector3(5.6f, 0.03f, 0.6f), false);
             }
             else if (sceneName == "Level03_Mezzanine")
             {
-                StampNews("PaperNews_6", "Docs/paper_6", new Vector3(-2.85f, 0.03f, 2.05f));
+                StampNews("PaperNews_6", new Vector3(-2.85f, 0.03f, 2.05f), true);
             }
             else if (sceneName == "Level04_Origen")
             {
-                StampNews("PaperNews_7", "Docs/paper_7", new Vector3(3.55f, 0.68f, -3.35f));
+                StampNews("PaperNews_7", new Vector3(3.55f, 0.68f, -3.35f), true);
             }
         }
 
-        private void StampNews(string name, string texPath, Vector3 pos)
+        // Grosor del diario en el piso
+        private const float NewsSheet = 0.01f;
+
+        // Si ya existe se actualiza: subir BakeId solo no reconstruye nada
+        private void StampNews(string name, Vector3 pos, bool readable)
         {
-            if (FindLocal(name) != null)
+            // La altura final la da SettleProps en el bake; en Play no se repone la de partida
+            if (Application.isPlaying)
                 return;
-            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            go.name = name;
-            go.transform.SetParent(_root, false);
-            go.transform.position = pos;
-            go.transform.rotation = Quaternion.Euler(0f, 18f, 0f);
-            go.transform.localScale = new Vector3(0.46f, 0.01f, 0.62f);
-            var col = go.GetComponent<Collider>();
-            if (col != null)
+            var go = FindLocal(name);
+            if (go == null)
             {
-                if (Application.isPlaying)
-                    Object.Destroy(col);
-                else
-                    Object.DestroyImmediate(col);
+                go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = name;
+                go.transform.SetParent(_root, false);
             }
+            go.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, 18f, 0f));
+            go.transform.localScale = new Vector3(0.46f, NewsSheet, 0.62f);
             var rend = go.GetComponent<MeshRenderer>();
-            if (rend == null)
-                return;
-            var tex = Resources.Load<Texture2D>(texPath);
-            if (_paper != null)
+            if (rend != null)
             {
-                var mat = new Material(_paper);
-                if (tex != null)
-                {
-                    mat.SetTexture("_BaseMap", tex);
-                    mat.SetTexture("_MainTex", tex);
-                }
-                rend.sharedMaterial = mat;
+                var mat = readable && newspaperMaterial != null ? newspaperMaterial : _paper;
+                if (mat != null)
+                    rend.sharedMaterial = mat;
+                rend.shadowCastingMode = ShadowCastingMode.Off;
             }
-            rend.shadowCastingMode = ShadowCastingMode.Off;
+
+            var reader = readable && newspaper != null ? SceneReader() : null;
+            var doc = go.GetComponent<DocumentInteractable>();
+            var box = go.GetComponent<BoxCollider>();
+            if (reader == null)
+            {
+                if (doc != null)
+                    DropComponent(doc);
+                if (box != null)
+                    DropComponent(box);
+                return;
+            }
+            if (box == null)
+                box = go.AddComponent<BoxCollider>();
+            box.isTrigger = true;
+            // El trigger queda más alto que la hoja para que se pueda agarrar del piso
+            box.size = new Vector3(1f, PileReach / NewsSheet, 1f);
+            box.center = Vector3.zero;
+            int layer = LayerMask.NameToLayer("Interactable");
+            if (layer >= 0)
+                go.layer = layer;
+            if (doc == null)
+                doc = go.AddComponent<DocumentInteractable>();
+            doc.Configure(newspaper, reader, newspaperConfig);
+        }
+
+        private DocumentReaderUI SceneReader()
+        {
+            foreach (var r in FindObjectsByType<DocumentReaderUI>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (r.gameObject.scene == gameObject.scene)
+                    return r;
+            return null;
+        }
+
+        private static void DropComponent(Component c)
+        {
+            if (Application.isPlaying)
+                Object.Destroy(c);
+            else
+                Object.DestroyImmediate(c);
         }
 
     }

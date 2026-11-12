@@ -1,3 +1,4 @@
+using Enigma.Data;
 using Enigma.Interaction;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -8,8 +9,13 @@ namespace Enigma.Environment
     // Kenney en escena. Colliders del greybox se quedan.
     public partial class KitbashDressing : MonoBehaviour
     {
-        public const int BakeId = 42;
+        public const int BakeId = 44;
         public int bakedId;
+
+        [SerializeField] private DocumentData newspaper;
+        // El diario del nivel se lee y entra al journal; los demás diarios del piso son decorado.
+        [SerializeField] private Material newspaperMaterial;
+        [SerializeField] private InteractableConfig newspaperConfig;
 
         private Transform _root;
         private Material _wood;
@@ -53,6 +59,7 @@ namespace Enigma.Environment
             PlaceRoofs(sceneName);
             PowerBulbs(sceneName);
             DressRuntime(sceneName);
+            PlaceArrival(sceneName);
             bakedId = BakeId;
         }
 
@@ -163,6 +170,10 @@ namespace Enigma.Environment
             {
                 if (FindLocal("Kit_ExitPad") == null)
                     ExitPad(new Vector3(0f, 0.7f, 2.4f), new Vector3(1.15f, 1.4f, 1.15f));
+                // Las letras del piso no se ven a través de los archiveros
+                foreach (var doc in FindObjectsByType<DocumentInteractable>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                    if (doc.gameObject.scene == gameObject.scene)
+                        ItemVisuals.WorldText(doc.gameObject);
             }
             PlaceRoofs(gameObject.scene.name);
             DressRuntime(gameObject.scene.name);
@@ -275,6 +286,19 @@ namespace Enigma.Environment
             Paint(src, mat);
         }
 
+        private void SupportCollider(string name)
+        {
+            var go = FindLocal(name);
+            if (go == null)
+                return;
+            var box = go.GetComponent<BoxCollider>();
+            if (box == null)
+                box = go.AddComponent<BoxCollider>();
+            box.isTrigger = false;
+            box.center = Vector3.zero;
+            box.size = Vector3.one;
+        }
+
         private static Vector3 IntoRoomFrom(Transform t)
         {
             if (t == null)
@@ -361,6 +385,7 @@ namespace Enigma.Environment
             PaintProps();
             PlaceOverrideKey();
             SettleProps();
+            FitPcScreen(sceneName);
             PropSolidPass();
         }
 

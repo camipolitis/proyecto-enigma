@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa121de79b4a42f47bd59a4d01fbcb6d, type: 3}
+  m_Name: SO_Doc_Radio
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
+  id: radio_recording
+  title: Radio
+  body: "\xAB...habla M. Si esto vuelve a sonar, ya pas\xF3 otra vez. No conf\xEDes
+    en la...\xBB"
+  releaseSubtitle: 
+  releaseDialogueId: 
+  memoryCollectedMessage: Memoria recolectada
+  isMemory: 1
+  viewImage: {fileID: 0}
+  imageOnly: 0
+  photo: {fileID: 0}
+  openVoice: {fileID: 0}
+  audioOnly: 1
+  tensionOnRead: 0
+  cornerLetter: 
+  titleFont: {fileID: 0}
+  bodyFont: {fileID: 0}

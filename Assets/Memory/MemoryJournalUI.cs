@@ -111,7 +111,7 @@ namespace Enigma.Memory
                 RebuildList();
         }
 
-        public void ShowToast(string message)
+        private void ShowToast(string message)
         {
             if (toastRoot != null)
                 toastRoot.SetActive(true);

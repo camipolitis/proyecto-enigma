@@ -11,6 +11,16 @@ namespace Enigma.Interaction
         [SerializeField] private DocumentData document;
         [SerializeField] private DocumentReaderUI readerUi;
 
+        public DocumentData Document => document;
+
+        // Lo usa el vestido al grabar los diarios del mundo
+        public void Configure(DocumentData doc, DocumentReaderUI reader, InteractableConfig cfg)
+        {
+            document = doc;
+            readerUi = reader;
+            config = cfg;
+        }
+
         public override bool AllowsInventoryWhileZoom => false;
         // Leer nota nunca permite inventario.
 

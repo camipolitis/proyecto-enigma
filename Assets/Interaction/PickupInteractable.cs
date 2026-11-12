@@ -10,10 +10,12 @@ namespace Enigma.Interaction
         [SerializeField] private InventoryItem item;
         [SerializeField] private bool disableOnPickup = true;
 
+        public InventoryItem Item => item;
+
         private void Start()
         {
             if (item != null)
-                ItemVisuals.Dress(gameObject, item.id);
+                ItemVisuals.Dress(gameObject, item);
             ItemVisuals.WorldText(gameObject);
         }
 

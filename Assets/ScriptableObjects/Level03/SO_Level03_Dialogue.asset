@@ -69,8 +69,3 @@ MonoBehaviour:
     text: "Sali\xF3 por la impresora..."
     duration: 2.5
     voice: {fileID: 0}
-  - id: radio_m
-    text: "\xAB...habla M. Si esto vuelve a sonar, ya pas\xF3 otra vez. No conf\xEDes
-      en la...\xBB"
-    duration: 5
-    voice: {fileID: 0}

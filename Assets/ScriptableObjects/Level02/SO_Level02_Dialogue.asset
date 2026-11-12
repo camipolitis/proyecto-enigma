@@ -30,9 +30,9 @@ MonoBehaviour:
     duration: 2.5
     voice: {fileID: 8300000, guid: 94f969ed9041ee74ab7c110201093f14, type: 3}
   - id: calendar_hint
-    text: Trece de diciembre del 78...
+    text: Diciembre del 78...
     duration: 2.5
-    voice: {fileID: 8300000, guid: aeed35ce1baac0f4a8d62be69988cdd3, type: 3}
+    voice: {fileID: 0}
   - id: lock_fail
     text: "Cu\xE1l ser\xE1 el c\xF3digo?..."
     duration: 2.5

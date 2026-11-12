@@ -1,3 +1,4 @@
+using Enigma.Data;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -8,6 +9,7 @@ namespace Enigma.Interaction
     {
         static Font _marker;
         static Font _note;
+        static Font _header;
         static readonly System.Collections.Generic.Dictionary<Font, Material> _textMats = new System.Collections.Generic.Dictionary<Font, Material>();
 
         // Medida mayor en el mundo, cuando difiere de la de inspección (la hoja impresa es A4)
@@ -46,8 +48,20 @@ namespace Enigma.Interaction
                 || id == "credential" || id == "painting" || (id != null && id.StartsWith("print_"));
         }
 
+        // Con el ítem: el encabezado de la impresión y la nota del cuadro salen de sus documentos
+        public static GameObject Build(InventoryItem item, float size = 0f)
+        {
+            if (item == null)
+                return null;
+            return Build(item.id, item.displayName, size, HeaderOf(item), NoteOf(item));
+        }
+
+        static string HeaderOf(InventoryItem item) => item != null && item.inspectDoc != null ? item.inspectDoc.title : null;
+
+        static string NoteOf(InventoryItem item) => item != null && item.memoryDoc != null ? item.memoryDoc.body : null;
+
         // Devuelve el modelo centrado en el origen, sin colliders, con la medida de SizeOf
-        public static GameObject Build(string id, string label = null, float size = 0f)
+        public static GameObject Build(string id, string label = null, float size = 0f, string header = null, string note = null)
         {
             GameObject go;
             if (id == "override_key")
@@ -61,9 +75,9 @@ namespace Enigma.Interaction
             else if (id == "fuse")
                 go = Fuse();
             else if (id != null && id.StartsWith("print_"))
-                go = Print(label ?? id.Substring(6));
+                go = Print(label ?? id.Substring(6), header);
             else if (id == "painting")
-                go = Painting();
+                go = Painting(note);
             else
                 go = Kit("UI_Paper");
             if (go == null)
@@ -89,6 +103,46 @@ namespace Enigma.Interaction
 
         // Reemplaza el placeholder de un pickup por su modelo, manteniendo el área de interacción
         public static void Dress(GameObject pickup, string id)
+        {
+            Dress(pickup, id, () => Build(id, null, WorldSizeOf(id)));
+        }
+
+        // Con el ítem: si el encabezado grabado ya no coincide, el modelo se arma de nuevo
+        public static void Dress(GameObject pickup, InventoryItem item)
+        {
+            if (pickup == null || item == null)
+                return;
+            var old = pickup.transform.Find("Visual_" + item.id);
+            string header = HeaderOf(item) ?? string.Empty;
+            // Solo los modelos que dibujan encabezado se comparan; el resto se viste como siempre
+            if (old == null || old.Find("Print_Header") == null || HeaderText(old) == header)
+            {
+                Dress(pickup, item.id, () => Build(item, WorldSizeOf(item.id)));
+                return;
+            }
+            // El placeholder ya perdió su escala: el modelo nuevo toma la pose del viejo en vez de volver a apoyarse
+            Vector3 pos = old.localPosition;
+            Quaternion rot = old.localRotation;
+            old.name = "Visual_Old";
+            old.gameObject.SetActive(false);
+            if (Application.isPlaying)
+                Object.Destroy(old.gameObject);
+            else
+                Object.DestroyImmediate(old.gameObject);
+            Dress(pickup, item.id, () => Build(item, WorldSizeOf(item.id)));
+            var fresh = pickup.transform.Find("Visual_" + item.id);
+            if (fresh != null)
+                fresh.SetLocalPositionAndRotation(pos, rot);
+        }
+
+        static string HeaderText(Transform vis)
+        {
+            var t = vis.Find("Print_Header");
+            var tm = t != null ? t.GetComponent<TextMesh>() : null;
+            return tm != null ? tm.text : string.Empty;
+        }
+
+        static void Dress(GameObject pickup, string id, System.Func<GameObject> build)
         {
             if (pickup == null || !HasCustom(id) || id == "credential" || id == "fuse")
                 return;
@@ -122,7 +176,7 @@ namespace Enigma.Interaction
             if (own != null)
                 own.enabled = false;
 
-            var vis = Build(id, null, WorldSizeOf(id));
+            var vis = build();
             if (vis == null)
             {
                 if (own != null)
@@ -187,11 +241,31 @@ namespace Enigma.Interaction
             return root;
         }
 
-        static GameObject Print(string number)
+        static GameObject Print(string number, string header)
         {
             var root = new GameObject();
             var paper = Mat("Mat_PrintPaper");
             Part(root, PrimitiveType.Cube, Vector3.zero, new Vector3(0.21f, 0.002f, 0.29f), paper);
+
+            // Encabezado chico de la carpeta, arriba de la hoja
+            if (!string.IsNullOrEmpty(header))
+            {
+                var head = new GameObject("Print_Header");
+                head.transform.SetParent(root.transform, false);
+                head.transform.localPosition = new Vector3(0f, 0.0015f, 0.125f);
+                head.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                var htm = head.AddComponent<TextMesh>();
+                htm.text = header;
+                htm.font = HeaderFont;
+                htm.fontSize = 48;
+                htm.characterSize = 0.0022f;
+                htm.anchor = TextAnchor.MiddleCenter;
+                htm.alignment = TextAlignment.Center;
+                htm.color = new Color(0.36f, 0.42f, 0.55f, 1f);
+                var hmr = head.GetComponent<MeshRenderer>();
+                hmr.sharedMaterial = FontMat(htm.font);
+                hmr.shadowCastingMode = ShadowCastingMode.Off;
+            }
 
             var txt = new GameObject("Print_Number");
             txt.transform.SetParent(root.transform, false);
@@ -217,6 +291,9 @@ namespace Enigma.Interaction
         // Letra de la nota del dorso del cuadro
         public static Font NoteFont => _note != null ? _note : (_note = LoadFont("Fonts/CedarvilleCursive-Regular"));
 
+        // Encabezado de las impresiones: el mismo en el modelo y en el lector
+        public static Font HeaderFont => _header != null ? _header : (_header = LoadFont("Fonts/BonaNovaSC-Regular"));
+
         static Font LoadFont(string path)
         {
             var f = Resources.Load<Font>(path);
@@ -230,7 +307,9 @@ namespace Enigma.Interaction
                 return;
             foreach (var tm in root.GetComponentsInChildren<TextMesh>(true))
             {
-                Font f = tm.name == "Print_Number" ? MarkerFont : tm.name == "Painting_Note" ? NoteFont : null;
+                Font f = tm.name == "Print_Number" ? MarkerFont
+                    : tm.name == "Painting_Note" ? NoteFont
+                    : tm.name == "Print_Header" ? HeaderFont : null;
                 if (f == null || tm.font == f)
                     continue;
                 tm.font = f;
@@ -241,7 +320,7 @@ namespace Enigma.Interaction
         }
 
         // Frente: la pintura. Dorso: papel madera con la nota de Panizza, se lee al girar
-        static GameObject Painting()
+        static GameObject Painting(string note)
         {
             var root = new GameObject();
             // Proporción del óleo original (244 x 183 cm): la textura se importa cuadrada
@@ -261,15 +340,14 @@ namespace Enigma.Interaction
             var back = Part(root, PrimitiveType.Quad, new Vector3(0f, 0f, t * 0.25f), new Vector3(w, h, 1f), Mat("Mat_Kraft"));
             back.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
 
+            if (string.IsNullOrEmpty(note))
+                return root;
             var txt = new GameObject("Painting_Note");
             txt.transform.SetParent(root.transform, false);
             txt.transform.localPosition = new Vector3(0f, 0.04f, t * 0.25f + 0.002f);
             txt.transform.localRotation = Quaternion.Euler(0f, 180f, -4f);
             var tm = txt.AddComponent<TextMesh>();
-            tm.text = "Lo que hoy se susurra en este cuarto\nmañana lo oirán todas las banderas.\n"
-                + "Querrán torcer el tiempo a su favor\ny el cielo, sempiterno, guardará la ceniza;\n"
-                + "cada ciudad será un cadáver que todavía respira.\n"
-                + "No es pigricia lo que me detiene:\nes saber que ya empezó.\n\n— Panizza";
+            tm.text = note;
             tm.font = NoteFont;
             tm.fontSize = 64;
             tm.characterSize = 0.0052f;

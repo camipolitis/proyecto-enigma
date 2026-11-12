@@ -8,6 +8,9 @@ namespace Enigma.Interaction
         [SerializeField] private AudioClip staticLoop;
         [SerializeField] private float staticVolume = 0.35f;
         [SerializeField] private Light dialLight;
+        [SerializeField] private Enigma.UI.DocumentReaderUI reader;
+        [SerializeField] private Enigma.Data.DocumentData recording;
+        // La frase cortada: se escucha como el cassette y queda en el journal
 
         private AudioSource _source;
         private bool _on;
@@ -25,6 +28,8 @@ namespace Enigma.Interaction
             _on = true;
             if (dialLight != null)
                 dialLight.enabled = true;
+            if (reader != null && recording != null)
+                reader.Listen(recording);
             if (staticLoop == null)
                 return;
             if (_source == null)
