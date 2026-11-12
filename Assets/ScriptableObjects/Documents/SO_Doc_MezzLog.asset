@@ -21,6 +21,7 @@ MonoBehaviour:
   releaseSubtitle: "Esa no la firm\xF3 nadie..."
   releaseDialogueId: 
   memoryCollectedMessage: Memoria recolectada
+  isMemory: 1
   viewImage: {fileID: 0}
   openVoice: {fileID: 0}
   tensionOnRead: 0

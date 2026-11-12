@@ -2,6 +2,7 @@ using System.Collections;
 using Enigma.Audio;
 using Enigma.CameraSystem;
 using Enigma.Inventory;
+using Enigma.Memory;
 using Enigma.UI;
 using UnityEngine;
 using UnityEngine.Events;
@@ -62,8 +63,22 @@ namespace Enigma.Core
             if (endPanel != null)
                 endPanel.SetActive(false);
 
+            SaveArrival();
+
             if (screenFade != null)
                 screenFade.FadeIn();
+        }
+
+        // Cada nivel se guarda al entrar, con las memorias que trae el journal
+        private void SaveArrival()
+        {
+            var ids = new System.Collections.Generic.List<string>();
+            var journal = MemoryJournal.Instance;
+            if (journal != null)
+                foreach (var doc in journal.Entries)
+                    if (doc != null)
+                        ids.Add(doc.id);
+            GameSave.Save(gameObject.scene.name, ids);
         }
 
         private void OnDisable()
@@ -131,8 +146,6 @@ namespace Enigma.Core
 
             if (sceneLoader != null && !string.IsNullOrEmpty(nextSceneName))
             {
-                if (GameFlagSystem.Instance != null && GameFlagSystem.Instance.Get("hatch_unlocked"))
-                    GameFlagSystem.Carry("hatch_unlocked");
                 sceneLoader.LoadSceneByName(nextSceneName);
                 yield break;
             }

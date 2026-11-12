@@ -14,14 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: subject_117
   title: EXPEDIENTE 117
-  body: "EXPEDIENTE N\xBA 117\nEstado: en observaci\xF3n\n\nPide agua. No recuerda
-    por qu\xE9.\nNo responde al nombre de ingreso. Come si se lo indican.\nEl resto
-    del d\xEDa, quieto. Sin registro de visita."
-  releaseSubtitle: "M..."
+  body: "EXPEDIENTE N\xBA 117\nEstado: en observaci\xF3n\n\nCuenta las baldosas en
+    voz baja. Empieza de nuevo cada vez que lo interrumpen.\nCome si se lo indican.
+    El resto del d\xEDa, quieto. Sin registro de visita."
+  releaseSubtitle: M...
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
+  isMemory: 0
   viewImage: {fileID: 2800000, guid: e5f0c3d860719241e0c6f3a9d2b51738, type: 3}
+  imageOnly: 0
+  photo: {fileID: 2800000, guid: 9d5270e34c0db7bd4f7a6c0e3b5d8f26, type: 3}
   openVoice: {fileID: 0}
-  cornerLetter: E
+  audioOnly: 0
+  tensionOnRead: 0
+  cornerLetter: I
   titleFont: {fileID: 12800000, guid: a123a68c00d73354ba63e164a69fb96b, type: 3}
   bodyFont: {fileID: 12800000, guid: 4e24c98e2a6c5904697c51c2b22699e8, type: 3}

@@ -1198,6 +1198,34 @@ namespace Enigma.Environment
             FitToHeight(go, 0f, top.y);
         }
 
+        // Distancia del pie de la escalera a la que aparece Megan al bajar
+        private const float ArrivalStandOff = 0.6f;
+        private const float ArrivalLift = 0.1f;
+
+        // Al entrepiso solo se llega bajando la escotilla: Megan queda al pie de la escalera mirando al escritorio de las huellas
+        private void PlaceArrival(string sceneName)
+        {
+            if (sceneName != "Level03_Mezzanine" || Application.isPlaying)
+                return;
+            var ladder = FindLocal("Kit_oliveladderpoly");
+            var desk = FindLocal("Kit_Mezz_Desk");
+            Enigma.Player.PlayerStateController player = null;
+            foreach (var p in Object.FindObjectsByType<Enigma.Player.PlayerStateController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (p.gameObject.scene == gameObject.scene)
+                    player = p;
+            if (ladder == null || desk == null || player == null)
+                return;
+            LadderEnds(ladder, out Vector3 tip, out Vector3 foot);
+            Vector3 open = Vector3.ProjectOnPlane(foot - tip, Vector3.up);
+            if (open.sqrMagnitude < 0.0001f)
+                return;
+            Vector3 pos = foot + open.normalized * ArrivalStandOff;
+            pos.y = foot.y + ArrivalLift;
+            Vector3 look = Vector3.ProjectOnPlane(Encapsulate(desk).center - pos, Vector3.up);
+            var rot = look.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(look, Vector3.up) : player.transform.rotation;
+            player.transform.SetPositionAndRotation(pos, rot);
+        }
+
         private static void LadderEnds(GameObject go, out Vector3 tip, out Vector3 foot)
         {
             var b = Encapsulate(go);

@@ -252,7 +252,7 @@ namespace Enigma.UI
             if (item == null)
                 return null;
             if (ItemVisuals.HasCustom(item.id))
-                return ItemVisuals.Build(item.id, item.displayName);
+                return ItemVisuals.Build(item);
             string kit = KitOf(item);
             var prefab = string.IsNullOrEmpty(kit) ? null : Resources.Load<GameObject>("Kitbash/" + kit);
             if (prefab == null)

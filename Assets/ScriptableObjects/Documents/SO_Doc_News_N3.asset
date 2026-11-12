@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa121de79b4a42f47bd59a4d01fbcb6d, type: 3}
+  m_Name: SO_Doc_News_N3
+  m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
+  id: news_n3
+  title: La Gaceta del Plata, 28/09/2078
+  body: "MI\xC9RCOLES 28 DE SEPTIEMBRE DE 2078\n\nPEK\xCDN PIDE REVISAR EL PROTOCOLO
+    ANT\xC1RTICO\n\nPor primera vez desde su firma, una parte consultiva solicit\xF3
+    formalmente la conferencia de revisi\xF3n del Protocolo de Madrid. La prohibici\xF3n
+    minera sigue vigente, pero la canciller\xEDa habl\xF3 de \xABreglas escritas
+    para otro siglo\xBB. Una empresa estatal confirm\xF3 perforaciones \xABcient\xEDficas\xBB
+    en la Ant\xE1rtida oriental."
+  releaseSubtitle: 
+  releaseDialogueId: 
+  memoryCollectedMessage: Memoria recolectada
+  isMemory: 1
+  viewImage: {fileID: 2800000, guid: e4181a9c33b950a44a35be2875b61c80, type: 3}
+  imageOnly: 0
+  photo: {fileID: 0}
+  openVoice: {fileID: 0}
+  audioOnly: 0
+  tensionOnRead: 0
+  cornerLetter: 
+  titleFont: {fileID: 12800000, guid: 2f93e136c3280f34da87266ae9feb111, type: 3}
+  bodyFont: {fileID: 12800000, guid: a123a68c00d73354ba63e164a69fb96b, type: 3}

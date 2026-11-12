@@ -14,8 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: calendar_dec1978
   title: CALENDARIO - DICIEMBRE 1978
-  body: "DICIEMBRE 1978\nSector C"
-  releaseSubtitle: Trece de diciembre del 78...
+  body: 'DICIEMBRE 1978
+
+    Sector C'
+  releaseSubtitle: Diciembre del 78...
   releaseDialogueId: calendar_hint
   memoryCollectedMessage: Memoria recolectada
+  isMemory: 0
   viewImage: {fileID: 2800000, guid: 79f4fbd19a5eaf14192ee90eabf3b278, type: 3}
+  imageOnly: 1
+  photo: {fileID: 0}
+  openVoice: {fileID: 0}
+  audioOnly: 0
+  tensionOnRead: 0
+  cornerLetter: 
+  titleFont: {fileID: 0}
+  bodyFont: {fileID: 0}

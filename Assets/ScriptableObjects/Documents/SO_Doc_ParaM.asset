@@ -14,10 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: para_m
   title: PARA M
-  body: "M:\n\nSi lleg\xE1s hasta ac\xE1, mir\xE1 a la izquierda del miedo, otra vez a la izquierda del archivo, y una izquierda m\xE1s cuando el techo te mienta.\nDespu\xE9s and\xE1 a la derecha de lo que firmaste, a la derecha de la vela, a la derecha de las tres de la ma\xF1ana.\nVolv\xE9 a la izquierda del clip, a la izquierda del humo, y reci\xE9n ah\xED una derecha: la que no pusimos en el parte.\n\nNo dejes la credencial a la vista."
-  releaseSubtitle: "M..."
+  body: "M: \xBFA\xFAn pod\xE9s leer? Necesito que me creas y me prestes mucha atenci\xF3n.\nLa
+    rosa de los vientos, como en un mapa vas a ver.\n<color=#5C8AE6><b>POR DONDE EL
+    SOL SE OCULT\xD3</b></color> tres veces, no hemos visto un atardecer.\nSi el techo
+    te miente, volte\xE1 a la <color=#5C8AE6><b>DERECHA</b></color>. Asegurate que
+    el reloj marque <color=#5C8AE6><b>LAS 15H</b></color>.\nQu\xE9 locura... El sol
+    sali\xF3 otra vez... <color=#5C8AE6><b>\xBFD\xD3NDE?</b></color>\nCuando huela
+    a humo, apretate <color=#5C8AE6><b>EL CORAZ\xD3N</b></color>. Significa que <color=#5C8AE6><b>OCCIDENTE</b></color>
+    se rindi\xF3.\nEl \xFAltimo tramo est\xE1 en <color=#5C8AE6><b>EL MARGEN DONDE
+    TERMINAN LOS RENGLONES</b></color>."
+  releaseSubtitle: M...
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
+  isMemory: 1
   viewImage: {fileID: 2800000, guid: c3d8a1b64e5f7029c8a4d1e7b0f39516, type: 3}
+  imageOnly: 0
+  photo: {fileID: 0}
   openVoice: {fileID: 0}
+  audioOnly: 0
   tensionOnRead: 1
+  cornerLetter: 
+  titleFont: {fileID: 0}
+  bodyFont: {fileID: 0}

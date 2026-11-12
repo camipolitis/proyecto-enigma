@@ -69,6 +69,9 @@ namespace Enigma.Inventory
                     _slots[i] = item;
                     _selectedIndex = i;
                     OnChanged?.Invoke();
+                    // Credencial y cuadro: entran al journal al recibirlos
+                    if (item.memoryDoc != null && item.memoryDoc.isMemory)
+                        Enigma.Memory.MemoryJournal.Instance?.TryAdd(item.memoryDoc);
                     return true;
                 }
             }

@@ -16,7 +16,7 @@ namespace Enigma.UI
         [SerializeField] private Text displayLabel;
         [SerializeField] private Text titleLabel;
         [SerializeField] private int maxLetters = 4;
-        [SerializeField] private string correctWord = "VELA";
+        [SerializeField] private string correctWord = "TIME";
         [SerializeField] private string successFlagId = "pc_unlocked";
         [SerializeField] private DialogueLineSet dialogue;
         [SerializeField] private string failDialogueId = "pc_password_fail";

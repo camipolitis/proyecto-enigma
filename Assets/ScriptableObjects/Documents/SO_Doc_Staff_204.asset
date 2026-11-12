@@ -20,6 +20,7 @@ MonoBehaviour:
   releaseSubtitle: "M..."
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
+  photo: {fileID: 2800000, guid: 6a2f4db019dae48a1c4d3f7b0e2a5c93, type: 3}
   viewImage: {fileID: 2800000, guid: b8c3f6a193a4c574b3f926dca5e84a6b, type: 3}
   openVoice: {fileID: 0}
   titleFont: {fileID: 12800000, guid: a123a68c00d73354ba63e164a69fb96b, type: 3}

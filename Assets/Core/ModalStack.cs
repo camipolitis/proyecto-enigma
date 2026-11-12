@@ -133,7 +133,7 @@ namespace Enigma.Core
                 Contains(ModalKind.CodeEntry) || Contains(ModalKind.WirePuzzle) ||
                 Contains(ModalKind.WordEntry) || Contains(ModalKind.ArrowLock) ||
                 Contains(ModalKind.Computer) || Contains(ModalKind.ItemInspect) ||
-                Contains(ModalKind.Memories))
+                Contains(ModalKind.Memories) || Contains(ModalKind.Notebook))
                 return false;
             // Pause, lectura y puzzles de UI bloquean el inventario
 
@@ -147,7 +147,8 @@ namespace Enigma.Core
                    Contains(ModalKind.CodeEntry) || Contains(ModalKind.WirePuzzle) ||
                    Contains(ModalKind.WordEntry) || Contains(ModalKind.ArrowLock) ||
                    Contains(ModalKind.Computer) || Contains(ModalKind.Inventory) ||
-                   Contains(ModalKind.ItemInspect) || Contains(ModalKind.Memories);
+                   Contains(ModalKind.ItemInspect) || Contains(ModalKind.Memories) ||
+                   Contains(ModalKind.Notebook);
         }
 
         public void ApplyCursorForTop()
@@ -162,7 +163,8 @@ namespace Enigma.Core
                           top == ModalKind.ArrowLock ||
                           top == ModalKind.Computer ||
                           top == ModalKind.ItemInspect ||
-                          top == ModalKind.Memories;
+                          top == ModalKind.Memories ||
+                          top == ModalKind.Notebook;
             Cursor.lockState = uiOpen ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = uiOpen;
         }

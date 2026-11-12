@@ -22,6 +22,8 @@ namespace Enigma.Interaction
 
         [SerializeField] private GameObject[] revealOnOpen;
 
+        public InventoryItem TakeItem => takeItem;
+
         public void SetReveal(GameObject content, GameObject[] reveal)
         {
             contentObject = content;

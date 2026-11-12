@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Enigma.Interaction
 {
-    // PC del escritorio: pide VELA y después abre el escritorio.
+    // PC del escritorio: pide la palabra de los expedientes y después abre el escritorio.
     public class PcInteractable : InteractableBase
     {
         [SerializeField] private WordEntryUI wordUi;

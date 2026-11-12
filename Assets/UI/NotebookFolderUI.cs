@@ -7,29 +7,24 @@ using UnityEngine.UI;
 
 namespace Enigma.UI
 {
-    // Tres carpetas post-password: dos corruptas, una con el registro (código 129).
-    public class NotebookFolderUI : MonoBehaviour
+    // Tres carpetas post-password: dos corruptas, una con el registro de la prueba.
+    public class NotebookFolderUI : ModalUIBase
     {
         [SerializeField] private GameObject root;
         [SerializeField] private GameObject folderListRoot;
-        [SerializeField] private GameObject noteRoot;
-        [SerializeField] private Text noteTitle;
-        [SerializeField] private Text noteBody;
         [SerializeField] private PlayerInputHandler input;
         [SerializeField] private SubtitleSystem subtitles;
         [SerializeField] private DialogueLineSet dialogue;
         [SerializeField] private string corruptDialogueId = "folder_corrupt";
+        [SerializeField] private string signDialogueId = "folder_sign";
+        [SerializeField] private DocumentReaderUI reader;
+        [SerializeField] private DocumentData record;
 
-        [TextArea(6, 14)]
-        [SerializeField] private string registroBody =
-            "REGISTRO DE OBSERVACIÓN - ORIGEN / 129\n\n" +
-            "La prueba presentó irregularidades durante la recuperación.\n" +
-            "El sujeto manifestó desorientación y pérdida parcial de memoria.\n" +
-            "La reconstrucción no alcanzó los niveles de estabilidad esperados.\n" +
-            "Se recomienda suspender nuevas pruebas hasta determinar la causa.\n- M.";
+        private bool _readingRecord;
 
-        private bool _open;
-        private bool _showingNote;
+        protected override ModalKind Kind => ModalKind.Notebook;
+        protected override GameObject ModalRoot => root;
+        protected override PlayerInputHandler Input => input;
 
         private void Start()
         {
@@ -39,86 +34,63 @@ namespace Enigma.UI
 
         private void Update()
         {
-            if (!_open || input == null)
+            if (!IsOpen)
                 return;
 
-            if (ModalStack.Instance != null && !ModalStack.Instance.IsTop(ModalKind.Document))
+            if (ModalStack.Instance != null && !ModalStack.Instance.IsTop(Kind))
                 return;
 
-            if (!input.TryConsumeBack())
-                return;
-
-            if (_showingNote)
+            // Al cerrar el lector vuelve la lista de carpetas
+            if (root != null && !root.activeSelf)
+            {
                 ShowFolders();
-            else
-                Close();
+                if (_readingRecord)
+                    PlayLine(signDialogueId);
+                _readingRecord = false;
+                return;
+            }
+
+            TryCloseWithBack();
         }
 
         public void Open()
         {
-            _open = true;
             ShowFolders();
-            if (root != null)
-                root.SetActive(true);
-
             Enigma.Audio.SfxPlayer.Instance?.Play("notebook");
-            ModalStack.Instance?.Push(ModalKind.Document);
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            OpenModal();
 
             var first = folderListRoot != null ? folderListRoot.GetComponentInChildren<Button>(true) : null;
             if (first != null && EventSystem.current != null)
                 EventSystem.current.SetSelectedGameObject(first.gameObject);
         }
 
-        public void Close()
-        {
-            if (!_open)
-                return;
-
-            _open = false;
-            _showingNote = false;
-            if (root != null)
-                root.SetActive(false);
-
-            ModalStack.Instance?.TryPopSpecific(ModalKind.Document);
-            ModalStack.Instance?.ApplyCursorForTop();
-        }
-
         public void OnFolderCorrupt()
         {
-            PlayLine(corruptDialogueId, "parece que no puedo acceder...", 2.5f);
+            PlayLine(corruptDialogueId);
         }
 
         public void OnFolderRegistro()
         {
-            _showingNote = true;
-            if (folderListRoot != null)
-                folderListRoot.SetActive(false);
-            if (noteRoot != null)
-                noteRoot.SetActive(true);
-            if (noteTitle != null)
-                noteTitle.text = "REGISTRO DE OBSERVACIÓN";
-            if (noteBody != null)
-                noteBody.text = registroBody;
-            PlayLine("folder_sign", "firma: M...", 2f);
+            if (reader == null || record == null)
+                return;
+            _readingRecord = true;
+            if (root != null)
+                root.SetActive(false);
+            reader.Open(record, null, true);
         }
 
-        private void PlayLine(string id, string fallback, float duration)
+        private void PlayLine(string id)
         {
             if (dialogue != null && dialogue.TryGet(id, out var line))
                 subtitles?.Show(line.text, line.duration, line.voice);
-            else
-                subtitles?.Show(fallback, duration);
         }
 
         private void ShowFolders()
         {
-            _showingNote = false;
+            if (root != null)
+                root.SetActive(true);
             if (folderListRoot != null)
                 folderListRoot.SetActive(true);
-            if (noteRoot != null)
-                noteRoot.SetActive(false);
         }
     }
 }

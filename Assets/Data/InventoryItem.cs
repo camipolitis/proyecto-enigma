@@ -19,5 +19,8 @@ namespace Enigma.Data
 
         public DocumentData inspectDoc;
         // Documento opcional al inspeccionar.
+
+        public DocumentData memoryDoc;
+        // Entra al journal al recibir el ítem (credencial, cuadro).
     }
 }

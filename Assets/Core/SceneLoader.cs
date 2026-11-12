@@ -7,7 +7,6 @@ namespace Enigma.Core
     // Carga de escenas por nombre (Build Settings).
     public class SceneLoader : MonoBehaviour
     {
-        // El arranque desde el menú en el Editor lo decide PlayFromBuildSettings (menú Enigma)
         public void LoadSceneByName(string sceneName)
         {
             if (string.IsNullOrEmpty(sceneName))

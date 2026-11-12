@@ -3,11 +3,12 @@ using UnityEngine;
 
 namespace Enigma.UI
 {
-    // Pantalla de inicio: Jugar, Cómo jugar, Créditos.
+    // Pantalla de inicio: Continuar, Jugar, Cómo jugar, Créditos.
     public class MainMenuUI : MonoBehaviour
     {
         [SerializeField] private SceneLoader sceneLoader;
         [SerializeField] private string playSceneName = "Level01_Room";
+        [SerializeField] private GameObject continueButton;
         [SerializeField] private GameObject howToPanel;
         [SerializeField] private GameObject creditsPanel;
 
@@ -17,6 +18,8 @@ namespace Enigma.UI
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             HideOverlays();
+            if (continueButton != null)
+                continueButton.SetActive(GameSave.HasSave);
         }
 
         public void Play()
@@ -24,6 +27,16 @@ namespace Enigma.UI
             Enigma.Audio.SfxPlayer.Instance?.Play("ui_click");
             if (sceneLoader != null)
                 sceneLoader.LoadSceneByName(playSceneName);
+        }
+
+        // Vuelve al último nivel al que se entró, con las memorias que se tenían
+        public void Continue()
+        {
+            Enigma.Audio.SfxPlayer.Instance?.Play("ui_click");
+            if (sceneLoader == null || !GameSave.HasSave)
+                return;
+            GameSave.RequestContinue();
+            sceneLoader.LoadSceneByName(GameSave.Level);
         }
 
         public void ShowHowTo()

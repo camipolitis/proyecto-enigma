@@ -17,6 +17,6 @@ MonoBehaviour:
   successFlagId: 
   requiredItem: {fileID: 0}
   failDialogueId: 
-  successDialogueId: radio_m
+  successDialogueId: 
   requiresZoom: 0
   allowsInventoryWhileZoom: 0

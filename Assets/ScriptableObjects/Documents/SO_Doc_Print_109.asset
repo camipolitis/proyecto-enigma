@@ -13,10 +13,18 @@ MonoBehaviour:
   m_Name: SO_Doc_Print_109
   m_EditorClassIdentifier: Assembly-CSharp::Enigma.Data.DocumentData
   id: print_109
-  title: 
+  title: SUJETOS
   body: 109
-  releaseSubtitle: "M..."
+  releaseSubtitle: M...
   releaseDialogueId: note_release
   memoryCollectedMessage: Memoria recolectada
+  isMemory: 0
   viewImage: {fileID: 2800000, guid: d64b7e291b2c4dfcdb71bef42d60c2e3, type: 3}
+  imageOnly: 0
+  photo: {fileID: 0}
   openVoice: {fileID: 0}
+  audioOnly: 0
+  tensionOnRead: 0
+  cornerLetter: 
+  titleFont: {fileID: 0}
+  bodyFont: {fileID: 0}
